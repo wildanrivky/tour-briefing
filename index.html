@@ -4,35 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Briefing Generator — Tour Leader</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1.5rem 1rem 4rem; }
-  h1 { font-size: 18px; font-weight: 500; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 1.5rem; }
   .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
-  .card-title { font-size: 14px; font-weight: 500; color: #1a1a18; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .card-title { font-size: 14px; font-weight: 500; color: #1a1a18; margin-bottom: 1rem; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
   .field:last-child { margin-bottom: 0; }
   label { font-size: 12px; color: #666; }
-  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; outline: none; font-family: inherit; -webkit-appearance: none; }
+  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; outline: none; font-family: inherit; -webkit-appearance: none; appearance: none; }
   textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
   .auto-hint { font-size: 11px; color: #888; font-style: italic; margin: -6px 0 12px; }
-  .col-labels { display: grid; grid-template-columns: 64px 1fr 1fr 36px; gap: 6px; margin-bottom: 6px; }
-  .col-labels span { font-size: 11px; color: #888; }
-  .stop-row { display: grid; grid-template-columns: 64px 1fr 1fr 36px; gap: 6px; align-items: center; margin-bottom: 8px; }
-  .t-from-display { font-size: 13px; color: #666; background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 10px 6px; text-align: center; }
-  .stop-row input { font-size: 14px; }
-  .btn-del { background: none; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; cursor: pointer; color: #aaa; font-size: 18px; padding: 0; width: 36px; height: 44px; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
-  .btn-del:active { background: #f5f5f3; }
-  .btn-add { background: none; border: 0.5px dashed rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; color: #888; cursor: pointer; width: 100%; margin-top: 6px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; -webkit-tap-highlight-color: transparent; }
-  .btn-add:active { background: #f5f5f3; }
-  .btn-gen { background: #1a1a18; color: #fff; border: none; border-radius: 8px; padding: 14px 20px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; margin-bottom: 1rem; font-family: inherit; min-height: 50px; -webkit-tap-highlight-color: transparent; }
+  .stop-row { border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 10px; margin-bottom: 8px; background: #f5f5f3; }
+  .stop-top { display: grid; grid-template-columns: 1fr 1fr 44px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .stop-meta { display: flex; flex-direction: column; gap: 3px; }
+  .stop-meta-label { font-size: 11px; color: #888; }
+  .stop-meta-val { font-size: 13px; color: #1a1a18; font-weight: 500; }
+  .stop-meta input { font-size: 14px; padding: 8px 10px; }
+  .stop-bottom input { font-size: 14px; padding: 10px; background: #fff; }
+  .btn-del { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 8px; cursor: pointer; color: #aaa; font-size: 20px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; box-sizing: border-box; }
+  .btn-add { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #888; margin-top: 6px; padding: 12px; }
+  .btn-gen { background: #1a1a18; color: #fff; border: none; font-weight: 500; font-size: 15px; padding: 14px; margin-bottom: 1rem; }
   .btn-gen:active { opacity: 0.8; }
+  .btn-copy { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; padding: 12px 16px; margin-top: 10px; width: auto; }
   .result-box { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; white-space: pre-wrap; font-size: 13px; line-height: 1.8; color: #1a1a18; }
-  .btn-copy { background: none; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; padding: 12px 16px; font-size: 13px; cursor: pointer; margin-top: 10px; display: flex; align-items: center; gap: 6px; font-family: inherit; min-height: 44px; -webkit-tap-highlight-color: transparent; }
-  .btn-copy:active { background: #f5f5f3; }
   .container { max-width: 640px; margin: 0 auto; }
   @media (max-width: 480px) {
     .row3 { grid-template-columns: 1fr 1fr; }
@@ -52,7 +51,7 @@
     <div class="field"><label>Loading koper</label><input type="time" id="loading" value="08:45"></div>
   </div>
   <div class="row2">
-    <div class="field"><label>Tour mulai</label><input type="time" id="tourstart" value="09:00" oninput="recalcAll()"></div>
+    <div class="field"><label>Tour mulai</label><input type="time" id="tourstart" value="09:00"></div>
     <div class="field"><label>Hotel malam ini</label><input type="text" id="hotel" placeholder="Nama hotel"></div>
   </div>
 </div>
@@ -60,11 +59,8 @@
 <div class="card">
   <p class="card-title">Itinerary</p>
   <p class="auto-hint">Isi durasi (menit) — jam dihitung otomatis.</p>
-  <div class="col-labels">
-    <span>Jam mulai</span><span>Durasi (mnt)</span><span>Keterangan</span><span></span>
-  </div>
   <div id="stops"></div>
-  <button class="btn-add" onclick="addStop()">+ Tambah baris</button>
+  <div class="tappable btn-add" id="btn-add-stop">+ Tambah baris</div>
 </div>
 
 <div class="card">
@@ -100,11 +96,11 @@ Jaga-jaga bawa payung</textarea></div>
 Check & recheck semua tempat di kamar: kasur, kamar mandi, lemari dll</textarea></div>
 </div>
 
-<button class="btn-gen" onclick="generate()">Generate briefing</button>
+<div class="tappable btn-gen" id="btn-generate">Generate briefing</div>
 
 <div id="output" style="display:none;">
   <div class="result-box" id="result-text"></div>
-  <button class="btn-copy" onclick="copyText()">Salin ke clipboard</button>
+  <div class="tappable btn-copy" id="btn-copy" style="display:inline-flex;">Salin ke clipboard</div>
 </div>
 
 </div>
@@ -116,6 +112,13 @@ const defaultStops = [
   { dur: 150, label: 'Grand Palace' },
   { dur: 270, label: 'Grand Palace to Hotel' },
 ];
+function tap(el, fn) {
+  let moved = false;
+  el.addEventListener('touchstart', () => { moved = false; }, { passive: true });
+  el.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  el.addEventListener('touchend', e => { if (!moved) { e.preventDefault(); fn(); } });
+  el.addEventListener('click', fn);
+}
 function timeToMinutes(t) {
   if (!t) return 0;
   const [h, m] = t.split(':').map(Number);
@@ -135,10 +138,12 @@ function recalcAll() {
   const tourstart = document.getElementById('tourstart').value || '09:00';
   let cursor = timeToMinutes(tourstart);
   document.querySelectorAll('#stops .stop-row').forEach(row => {
-    row.querySelector('.t-from-display').textContent = fmt(minutesToTime(cursor));
+    const dur = parseInt(row.querySelector('.t-dur').value) || 0;
     row.dataset.fromMins = cursor;
-    cursor += parseInt(row.querySelector('.t-dur').value) || 0;
+    row.querySelector('.t-from-display').textContent = fmt(minutesToTime(cursor));
+    cursor += dur;
     row.dataset.toMins = cursor;
+    row.querySelector('.t-to-display').textContent = fmt(minutesToTime(cursor));
   });
 }
 function getLastDestination(label) {
@@ -163,15 +168,30 @@ function makeRow(dur, label) {
   row.dataset.fromMins = 0;
   row.dataset.toMins = 0;
   row.innerHTML = `
-    <div class="t-from-display">--:--</div>
-    <input type="number" class="t-dur" value="${dur}" min="5" max="600" step="5">
-    <input type="text" value="${label}" placeholder="Lokasi" class="t-label">
-    <button class="btn-del" onclick="delStop(this)">×</button>
+    <div class="stop-top">
+      <div class="stop-meta">
+        <span class="stop-meta-label">Jam mulai → selesai</span>
+        <span class="stop-meta-val"><span class="t-from-display">--:--</span> → <span class="t-to-display">--:--</span></span>
+      </div>
+      <div class="stop-meta">
+        <span class="stop-meta-label">Durasi (menit)</span>
+        <input type="number" class="t-dur" value="${dur}" min="5" max="600" step="5">
+      </div>
+      <div class="btn-del">×</div>
+    </div>
+    <div class="stop-bottom">
+      <input type="text" value="${label}" placeholder="cth: Hotel to Atomium" class="t-label">
+    </div>
   `;
   row.querySelector('.t-dur').addEventListener('input', recalcAll);
   row.querySelector('.t-label').addEventListener('input', () => {
     row.querySelector('.t-label').dataset.userEdited = '1';
     propagateLabelDown(row);
+  });
+  tap(row.querySelector('.btn-del'), () => {
+    if (document.querySelectorAll('#stops .stop-row').length > 1) {
+      row.remove(); recalcAll();
+    }
   });
   return row;
 }
@@ -182,11 +202,6 @@ function addStop() {
   document.getElementById('stops').appendChild(row);
   recalcAll();
   row.querySelector('.t-dur').focus();
-}
-function delStop(btn) {
-  if (document.querySelectorAll('#stops .stop-row').length > 1) {
-    btn.parentElement.remove(); recalcAll();
-  }
 }
 function generate() {
   recalcAll();
@@ -224,12 +239,27 @@ Selamat istirahat di ${v('hotel').trim() || 'hotel'} 😊`;
   document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
 }
 function copyText() {
-  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(() => {
-    const btn = document.querySelector('.btn-copy');
-    btn.innerHTML = 'Tersalin!';
-    setTimeout(() => { btn.innerHTML = 'Salin ke clipboard'; }, 2000);
-  });
+  const text = document.getElementById('result-text').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = 'Tersalin!';
+      setTimeout(() => { btn.textContent = 'Salin ke clipboard'; }, 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = 'Tersalin!';
+    setTimeout(() => { btn.textContent = 'Salin ke clipboard'; }, 2000);
+  }
 }
+document.getElementById('tourstart').addEventListener('input', recalcAll);
+tap(document.getElementById('btn-add-stop'), addStop);
+tap(document.getElementById('btn-generate'), generate);
+tap(document.getElementById('btn-copy'), copyText);
 defaultStops.forEach(s => document.getElementById('stops').appendChild(makeRow(s.dur, s.label)));
 recalcAll();
 </script>
