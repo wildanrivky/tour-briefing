@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rekomendasi Tempat — Tour Leader</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
@@ -17,6 +16,10 @@
   label { font-size: 12px; color: #666; }
   input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
   textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+  .kota-wrap { display: flex; gap: 8px; align-items: flex-end; }
+  .kota-wrap select { flex: 1; }
+  .btn-kota-baru { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #666; cursor: pointer; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; font-family: inherit; }
+  .inp-kota-baru { display: none; margin-top: 6px; }
   .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
   .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
   .tab.active { color: #1a1a18; border-bottom: 2px solid #1a1a18; font-weight: 500; }
@@ -29,7 +32,7 @@
   .place-name { font-size: 13px; font-weight: 500; margin: 0 28px 2px 0; }
   .place-meta { font-size: 11px; color: #888; margin: 0 0 4px; }
   .place-desc { font-size: 12px; color: #555; margin: 0; line-height: 1.5; }
-  .del-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 20px; padding: 4px; touch-action: manipulation; }
+  .del-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 20px; padding: 4px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); color: #666; margin-right: 4px; }
   .section-head { font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 6px; }
   .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
@@ -52,7 +55,14 @@
 <div id="panel-add">
   <div class="card">
     <p class="card-title">Input Tempat</p>
-    <div class="field"><label>Kota / Destinasi</label><input type="text" id="inp-kota" placeholder="cth: Brussels, Lucerne, Paris"></div>
+    <div class="field">
+      <label>Kota / Destinasi</label>
+      <div class="kota-wrap">
+        <select id="inp-kota"><option value="">Memuat...</option></select>
+        <button class="btn-kota-baru" id="btn-kota-baru" onclick="toggleKotaBaru()">+ Kota baru</button>
+      </div>
+      <input type="text" class="inp-kota-baru" id="inp-kota-baru" placeholder="Ketik nama kota baru...">
+    </div>
     <div class="field"><label>Nama Tempat</label><input type="text" id="inp-nama" placeholder="cth: Chapel Bridge"></div>
     <div class="field"><label>Kategori</label>
       <select id="inp-kat">
@@ -109,10 +119,9 @@
 </div>
 
 <script>
-const SUPA_URL = 'https://iwgmoofcdsabouzqamtp.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3Z21vb2ZjZHNhYm91enFhbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMDY0MjUsImV4cCI6MjA5Mjg4MjQyNX0.BOBFRB7UZ6dZ6iY8YDh6zYTgLs-t6dN524QW2-J6xcI';
-const { createClient } = supabase;
-const db = createClient(SUPA_URL, SUPA_KEY);
+const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
+let kotaList = [];
+let kotaBaruMode = false;
 
 function tap(el, fn) {
   if (!el) return;
@@ -138,58 +147,126 @@ function setStatus(msg, type) {
   el.style.color = type==='ok' ? 'green' : type==='err' ? 'red' : '#888';
 }
 
+function toggleKotaBaru() {
+  kotaBaruMode = !kotaBaruMode;
+  const inp = document.getElementById('inp-kota-baru');
+  const sel = document.getElementById('inp-kota');
+  const btn = document.getElementById('btn-kota-baru');
+  if (kotaBaruMode) {
+    inp.style.display = 'block';
+    sel.style.display = 'none';
+    btn.textContent = '← Pilih';
+    inp.focus();
+  } else {
+    inp.style.display = 'none';
+    sel.style.display = '';
+    btn.textContent = '+ Kota baru';
+  }
+}
+
+async function loadKotaDropdown() {
+  try {
+    const res = await fetch(API + '?action=get');
+    const json = await res.json();
+    const data = json.data || [];
+    kotaList = [...new Set(data.map(p => p.kota).filter(Boolean))].sort();
+    const sel = document.getElementById('inp-kota');
+    if (kotaList.length === 0) {
+      sel.innerHTML = '<option value="">-- Belum ada kota, tambah baru --</option>';
+    } else {
+      sel.innerHTML = '<option value="">-- Pilih kota --</option>' + kotaList.map(k => `<option value="${k}">${k}</option>`).join('');
+    }
+  } catch(e) {
+    document.getElementById('inp-kota').innerHTML = '<option value="">Gagal memuat</option>';
+  }
+}
+
+async function apiCall(body) {
+  const res = await fetch(API, { method: 'POST', body: JSON.stringify(body) });
+  return res.json();
+}
+
 async function simpan() {
   const nama = document.getElementById('inp-nama').value.trim();
-  const kota = document.getElementById('inp-kota').value.trim();
-  const kategori = document.getElementById('inp-kat').value;
-  const deskripsi = document.getElementById('inp-desc').value.trim();
-  const jam_buka = document.getElementById('inp-jam').value.trim();
-  const maps_url = document.getElementById('inp-maps').value.trim();
+  const kota = kotaBaruMode
+    ? document.getElementById('inp-kota-baru').value.trim()
+    : document.getElementById('inp-kota').value.trim();
   if (!nama || !kota) { setStatus('Nama tempat dan kota wajib diisi.', 'err'); return; }
   setStatus('Menyimpan...', '');
-  const { error } = await db.from('rekomendasi_tempat').insert({ nama, kota, kategori, deskripsi, jam_buka, maps_url });
-  if (error) { setStatus('Gagal menyimpan: ' + error.message, 'err'); return; }
-  document.getElementById('inp-nama').value = '';
-  document.getElementById('inp-desc').value = '';
-  document.getElementById('inp-jam').value = '';
-  document.getElementById('inp-maps').value = '';
-  setStatus('✓ ' + nama + ' tersimpan!', 'ok');
-  setTimeout(() => setStatus(''), 3000);
+  document.getElementById('btn-simpan').style.opacity = '0.5';
+  try {
+    const res = await apiCall({
+      action: 'insert', kota, nama,
+      kategori: document.getElementById('inp-kat').value,
+      deskripsi: document.getElementById('inp-desc').value.trim(),
+      jam_buka: document.getElementById('inp-jam').value.trim(),
+      maps_url: document.getElementById('inp-maps').value.trim()
+    });
+    if (res.success) {
+      document.getElementById('inp-nama').value = '';
+      document.getElementById('inp-desc').value = '';
+      document.getElementById('inp-jam').value = '';
+      document.getElementById('inp-maps').value = '';
+      if (kotaBaruMode) {
+        document.getElementById('inp-kota-baru').value = '';
+        toggleKotaBaru();
+        await loadKotaDropdown();
+        document.getElementById('inp-kota').value = kota;
+      }
+      setStatus('✓ ' + nama + ' tersimpan!', 'ok');
+      setTimeout(() => setStatus(''), 3000);
+    } else {
+      setStatus('Gagal: ' + (res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('Gagal menyimpan. Cek koneksi.', 'err');
+  }
+  document.getElementById('btn-simpan').style.opacity = '';
 }
 
 async function loadList() {
   const c = document.getElementById('list-container');
   c.innerHTML = '<p class="loading">Memuat...</p>';
-  const { data, error } = await db.from('rekomendasi_tempat').select('*').order('kota').order('kategori').order('created_at');
-  if (error || !data?.length) { c.innerHTML = '<p class="empty">Belum ada tempat tersimpan.</p>'; return; }
-  const grouped = {};
-  data.forEach(p => { if (!grouped[p.kota]) grouped[p.kota]=[]; grouped[p.kota].push(p); });
-  c.innerHTML = Object.entries(grouped).map(([kota, items]) => `
-    <p class="section-head">${kota}</p>
-    ${items.map(p => `
-      <div class="place-item">
-        <button class="del-btn" onclick="hapus(${p.id})">×</button>
-        <p class="place-name">${p.nama}</p>
-        <p class="place-meta"><span class="badge">${p.kategori}</span>${p.jam_buka ? '<span class="badge">'+p.jam_buka+'</span>' : ''}</p>
-        ${p.deskripsi ? '<p class="place-desc">'+p.deskripsi+'</p>' : ''}
-        ${p.maps_url ? '<p style="font-size:11px;margin-top:4px;"><a href="'+p.maps_url+'" style="color:#185FA5;">Lihat di Maps</a></p>' : ''}
-      </div>
-    `).join('')}
-  `).join('');
+  try {
+    const res = await fetch(API + '?action=get');
+    const json = await res.json();
+    const data = json.data || [];
+    if (!data.length) { c.innerHTML = '<p class="empty">Belum ada tempat tersimpan.</p>'; return; }
+    const grouped = {};
+    data.forEach(p => { if (!grouped[p.kota]) grouped[p.kota]=[]; grouped[p.kota].push(p); });
+    c.innerHTML = Object.entries(grouped).sort().map(([kota, items]) => `
+      <p class="section-head">${kota}</p>
+      ${items.map(p => `
+        <div class="place-item">
+          <button class="del-btn" onclick="hapus('${p.id}')">×</button>
+          <p class="place-name">${p.nama}</p>
+          <p class="place-meta"><span class="badge">${p.kategori}</span>${p.jam_buka ? '<span class="badge">'+p.jam_buka+'</span>' : ''}</p>
+          ${p.deskripsi ? '<p class="place-desc">'+p.deskripsi+'</p>' : ''}
+          ${p.maps_url ? '<p style="font-size:11px;margin-top:4px;"><a href="'+p.maps_url+'" style="color:#185FA5;">Lihat di Maps</a></p>' : ''}
+        </div>
+      `).join('')}
+    `).join('');
+  } catch(e) {
+    c.innerHTML = '<p class="empty">Gagal memuat data.</p>';
+  }
 }
 
 async function hapus(id) {
   if (!confirm('Hapus tempat ini?')) return;
-  await db.from('rekomendasi_tempat').delete().eq('id', id);
+  await apiCall({ action: 'delete', id });
   loadList();
 }
 
 async function loadFilterKota() {
   document.getElementById('wa-output').style.display = 'none';
-  const { data } = await db.from('rekomendasi_tempat').select('kota');
-  const kota = [...new Set((data||[]).map(p=>p.kota))];
-  const sel = document.getElementById('filter-kota');
-  sel.innerHTML = '<option value="">Semua kota</option>' + kota.map(k=>`<option value="${k}">${k}</option>`).join('');
+  try {
+    const res = await fetch(API + '?action=get');
+    const json = await res.json();
+    const data = json.data || [];
+    const kota = [...new Set(data.map(p=>p.kota))].sort();
+    const sel = document.getElementById('filter-kota');
+    sel.innerHTML = '<option value="">Semua kota</option>' + kota.map(k=>`<option value="${k}">${k}</option>`).join('');
+  } catch(e) {}
 }
 
 const ORDER = ['Landmark','Halal Food','Chinese Food','Local Food','Fast Food','Groceries','Souvenir','Toilet Umum'];
@@ -198,27 +275,32 @@ const ICON = { Landmark:'🏛', 'Halal Food':'🍽', 'Chinese Food':'🥢', 'Loc
 async function generateWA() {
   const kotaF = document.getElementById('filter-kota').value;
   const katF = document.getElementById('filter-kat').value;
-  let q = db.from('rekomendasi_tempat').select('*').order('kategori').order('nama');
-  if (kotaF) q = q.eq('kota', kotaF);
-  if (katF) q = q.eq('kategori', katF);
-  const { data } = await q;
-  if (!data?.length) { alert('Tidak ada tempat yang sesuai filter.'); return; }
-  const grouped = {};
-  data.forEach(p => { if (!grouped[p.kategori]) grouped[p.kategori]=[]; grouped[p.kategori].push(p); });
-  const kota = kotaF || [...new Set(data.map(p=>p.kota))].join(', ');
-  let txt = `📍 *Rekomendasi Tempat — ${kota}*\n`;
-  ORDER.filter(k => grouped[k]).forEach(kat => {
-    txt += `\n${ICON[kat]||'📌'} *${kat}*\n`;
-    grouped[kat].forEach(p => {
-      txt += `\n*${p.nama}*\n`;
-      if (p.deskripsi) txt += `${p.deskripsi}\n`;
-      if (p.jam_buka) txt += `🕐 ${p.jam_buka}\n`;
-      if (p.maps_url) txt += `📌 ${p.maps_url}\n`;
+  try {
+    const res = await fetch(API + '?action=get');
+    const json = await res.json();
+    let data = json.data || [];
+    if (kotaF) data = data.filter(p => p.kota === kotaF);
+    if (katF) data = data.filter(p => p.kategori === katF);
+    if (!data.length) { alert('Tidak ada tempat yang sesuai filter.'); return; }
+    const grouped = {};
+    data.forEach(p => { if (!grouped[p.kategori]) grouped[p.kategori]=[]; grouped[p.kategori].push(p); });
+    const kota = kotaF || [...new Set(data.map(p=>p.kota))].join(', ');
+    let txt = `📍 *Rekomendasi Tempat — ${kota}*\n`;
+    ORDER.filter(k => grouped[k]).forEach(kat => {
+      txt += `\n${ICON[kat]||'📌'} *${kat}*\n`;
+      grouped[kat].forEach(p => {
+        txt += `\n*${p.nama}*\n`;
+        if (p.deskripsi) txt += `${p.deskripsi}\n`;
+        if (p.jam_buka) txt += `🕐 ${p.jam_buka}\n`;
+        if (p.maps_url) txt += `📌 ${p.maps_url}\n`;
+      });
     });
-  });
-  txt += `\n━━━━━━━━━━━━━━\n_Selamat menikmati! 😊_`;
-  document.getElementById('wa-text').textContent = txt;
-  document.getElementById('wa-output').style.display = '';
+    txt += `\n━━━━━━━━━━━━━━\n_Selamat menikmati! 😊_`;
+    document.getElementById('wa-text').textContent = txt;
+    document.getElementById('wa-output').style.display = '';
+  } catch(e) {
+    alert('Gagal generate. Cek koneksi.');
+  }
 }
 
 function copyWA() {
@@ -241,6 +323,8 @@ function copyWA() {
 tap(document.getElementById('btn-simpan'), simpan);
 tap(document.getElementById('btn-gen-wa'), generateWA);
 tap(document.getElementById('btn-copy-wa'), copyWA);
+
+loadKotaDropdown();
 </script>
 </body>
 </html>
