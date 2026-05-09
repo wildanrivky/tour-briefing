@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto Trip — Tour Leader</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
+  h1 { font-size: 17px; font-weight: 500; margin-bottom: 1rem; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  label { font-size: 12px; color: #666; }
+  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
+  .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
+  .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .tab.active { color: #1a1a18; border-bottom: 2px solid #1a1a18; font-weight: 500; }
+  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-secondary { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; margin-bottom: 8px; }
+  .btn-back { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 0 0 12px; display: flex; align-items: center; gap: 4px; touch-action: manipulation; font-family: inherit; }
+  .trip-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .trip-card:active { background: #f5f5f3; }
+  .trip-emoji { font-size: 24px; flex-shrink: 0; }
+  .trip-info { flex: 1; }
+  .trip-name { font-size: 14px; font-weight: 500; color: #1a1a18; margin: 0 0 2px; }
+  .trip-desc { font-size: 11px; color: #888; margin: 0; }
+  .trip-arr { font-size: 18px; color: #ccc; }
+  .trip-del { background: none; border: none; color: #ccc; font-size: 20px; padding: 4px; cursor: pointer; touch-action: manipulation; }
+  .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
+  .status { font-size: 12px; text-align: center; min-height: 18px; margin-bottom: 6px; }
+  .embed-wrap { border-radius: 12px; overflow: hidden; border: 0.5px solid rgba(0,0,0,0.12); background: #fff; }
+  .embed-toolbar { background: #f8f9fa; padding: 8px 12px; border-bottom: 0.5px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; }
+  .embed-label { font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; }
+  .embed-open { font-size: 12px; color: #1a73e8; text-decoration: none; }
+  .container { max-width: 640px; margin: 0 auto; }
+  .hint { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>📸 Foto Trip</h1>
+
+<div id="view-list">
+  <div class="tab-row">
+    <div class="tab active" id="tab-lihat" onclick="switchTab('lihat')">📁 Trip</div>
+    <div class="tab" id="tab-tambah" onclick="switchTab('tambah')">+ Tambah Trip</div>
+  </div>
+
+  <div id="panel-lihat">
+    <div id="trip-list"><p class="empty">Belum ada trip.<br>Tap "+ Tambah Trip" untuk mulai.</p></div>
+  </div>
+
+  <div id="panel-tambah" style="display:none;">
+    <div class="card">
+      <p class="card-title">Tambah Trip Baru</p>
+      <div class="field">
+        <label>Nama Trip</label>
+        <input type="text" id="inp-trip-nama" placeholder="cth: Eropa Barat — Mei 2026">
+      </div>
+      <div class="field">
+        <label>Deskripsi (opsional)</label>
+        <input type="text" id="inp-trip-desc" placeholder="cth: Brussels · Bruges · Amsterdam">
+      </div>
+      <div class="field">
+        <label>Emoji</label>
+        <input type="text" id="inp-trip-emoji" placeholder="cth: 🇧🇪" maxlength="4" value="📁">
+      </div>
+      <div class="field">
+        <label>Google Drive Folder ID</label>
+        <input type="text" id="inp-trip-folderid" placeholder="cth: 1ggnH5BxtUJ3Q7if3Yrpfwu-tJTYKNSI6">
+        <span class="hint">Ambil dari link Drive: drive.google.com/drive/folders/<b>FOLDER_ID</b></span>
+      </div>
+    </div>
+    <div class="status" id="status-tambah"></div>
+    <div class="tappable btn-primary" id="btn-tambah-trip">Simpan Trip</div>
+  </div>
+</div>
+
+<div id="view-foto" style="display:none;">
+  <button class="btn-back" id="btn-back-foto">← Kembali</button>
+  <div id="foto-header" style="margin-bottom:1rem;"></div>
+  <div class="embed-wrap">
+    <div class="embed-toolbar">
+      <span class="embed-label">🗂️ Google Drive</span>
+      <a id="embed-open-link" href="#" target="_blank" class="embed-open">Buka di Drive ↗</a>
+    </div>
+    <iframe id="drive-embed" src="" width="100%" height="500" frameborder="0" allowfullscreen style="display:block;"></iframe>
+  </div>
+</div>
+
+<div id="jsonp-container" style="display:none;"></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
+let cbCount = 0;
+
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb' + (++cbCount);
+    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('Timeout')); }, 15000);
+    window[cbName] = function(data) {
+      clearTimeout(timeout); delete window[cbName];
+      document.getElementById('jsonp-container').innerHTML = '';
+      resolve(data);
+    };
+    const url = API + '?' + new URLSearchParams({ ...params, callback: cbName }).toString();
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('Script error')); };
+    document.getElementById('jsonp-container').appendChild(s);
+  });
+}
+
+function tap(el, fn) {
+  if (!el) return;
+  let moved = false;
+  el.addEventListener('touchstart', () => { moved = false; }, { passive: true });
+  el.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  el.addEventListener('touchend', e => { if (!moved) { e.preventDefault(); fn(); } });
+  el.addEventListener('click', fn);
+}
+
+function switchTab(t) {
+  ['lihat','tambah'].forEach(id => {
+    document.getElementById('panel-'+id).style.display = id===t ? '' : 'none';
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  if (t==='lihat') loadTripList();
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status-tambah');
+  el.textContent = msg;
+  el.style.color = type==='ok' ? '#16a34a' : type==='err' ? '#dc2626' : '#888';
+}
+
+async function loadTripList() {
+  const c = document.getElementById('trip-list');
+  c.innerHTML = '<p style="text-align:center;color:#888;font-size:13px;padding:1.5rem 0;">Memuat...</p>';
+  try {
+    const res = await jsonp({ action: 'get_trip' });
+    const data = (res.data || []).reverse();
+    if (!data.length) {
+      c.innerHTML = '<p class="empty">Belum ada trip.<br>Tap "+ Tambah Trip" untuk mulai.</p>';
+      return;
+    }
+    c.innerHTML = data.map(t => `
+      <div class="trip-card">
+        <span class="trip-emoji">${t.emoji || '📁'}</span>
+        <div class="trip-info" onclick="bukaFoto('${t.id}', '${(t.nama||'').replace(/'/g,"\\'")}', '${t.folder_id}', '${(t.deskripsi||'').replace(/'/g,"\\'")}')">
+          <p class="trip-name">${t.nama}</p>
+          ${t.deskripsi ? '<p class="trip-desc">'+t.deskripsi+'</p>' : ''}
+        </div>
+        <span class="trip-arr" onclick="bukaFoto('${t.id}', '${(t.nama||'').replace(/'/g,"\\'")}', '${t.folder_id}', '${(t.deskripsi||'').replace(/'/g,"\\'")}')">›</span>
+        <button class="trip-del" onclick="hapusTrip('${t.id}', event)">×</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    c.innerHTML = '<p class="empty">Gagal memuat. Cek koneksi.</p>';
+  }
+}
+
+async function tambahTrip() {
+  const nama = document.getElementById('inp-trip-nama').value.trim();
+  const desc = document.getElementById('inp-trip-desc').value.trim();
+  const emoji = document.getElementById('inp-trip-emoji').value.trim() || '📁';
+  const folderId = document.getElementById('inp-trip-folderid').value.trim();
+  if (!nama) { setStatus('Nama trip wajib diisi.', 'err'); return; }
+  if (!folderId) { setStatus('Folder ID wajib diisi.', 'err'); return; }
+  setStatus('Menyimpan...', '');
+  document.getElementById('btn-tambah-trip').style.opacity = '0.5';
+  try {
+    const res = await jsonp({ action: 'insert_trip', nama, deskripsi: desc, emoji, folder_id: folderId });
+    if (res.success) {
+      document.getElementById('inp-trip-nama').value = '';
+      document.getElementById('inp-trip-desc').value = '';
+      document.getElementById('inp-trip-emoji').value = '📁';
+      document.getElementById('inp-trip-folderid').value = '';
+      setStatus('✓ Trip tersimpan!', 'ok');
+      setTimeout(() => { setStatus('', ''); switchTab('lihat'); }, 800);
+    } else {
+      setStatus('Gagal: ' + (res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('Gagal. Cek koneksi.', 'err');
+  }
+  document.getElementById('btn-tambah-trip').style.opacity = '';
+}
+
+async function hapusTrip(id, e) {
+  e.stopPropagation();
+  if (!confirm('Hapus trip ini?')) return;
+  await jsonp({ action: 'hapus_trip', id });
+  loadTripList();
+}
+
+function bukaFoto(id, nama, folderId, desc) {
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-foto').style.display = '';
+  document.getElementById('foto-header').innerHTML = `
+    <p style="font-size:16px;font-weight:500;">${nama}</p>
+    ${desc ? '<p style="font-size:12px;color:#888;margin-top:2px;">'+desc+'</p>' : ''}
+  `;
+  const embedUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
+  document.getElementById('drive-embed').src = embedUrl;
+  document.getElementById('embed-open-link').href = `https://drive.google.com/drive/folders/${folderId}`;
+}
+
+function kembali() {
+  document.getElementById('view-foto').style.display = 'none';
+  document.getElementById('view-list').style.display = '';
+  document.getElementById('drive-embed').src = '';
+  loadTripList();
+}
+
+tap(document.getElementById('btn-tambah-trip'), tambahTrip);
+tap(document.getElementById('btn-back-foto'), kembali);
+loadTripList();
+</script>
+</body>
+</html>
