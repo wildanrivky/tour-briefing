@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi — Tour Leader</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
+  h1 { font-size: 17px; font-weight: 500; margin-bottom: 1rem; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  label { font-size: 12px; color: #666; }
+  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.8; }
+  .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
+  .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .tab.active { color: #1a1a18; border-bottom: 2px solid #1a1a18; font-weight: 500; }
+  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-secondary { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; margin-bottom: 8px; }
+  .btn-danger { background: #fff; border: 0.5px solid #dc2626; color: #dc2626; margin-bottom: 8px; }
+  .btn-back { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 0 0 12px; display: flex; align-items: center; gap: 4px; touch-action: manipulation; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .stat { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 500; }
+  .stat-lbl { font-size: 10px; color: #888; margin-top: 2px; }
+  .progress-wrap { background: #e5e7eb; border-radius: 99px; height: 6px; margin-bottom: 1rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: #16a34a; border-radius: 99px; transition: width 0.3s; }
+  .peserta-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  .peserta-row:last-child { border-bottom: none; }
+  .peserta-num { font-size: 12px; color: #aaa; width: 20px; text-align: center; flex-shrink: 0; }
+  .peserta-name { font-size: 14px; color: #1a1a18; flex: 1; }
+  .peserta-waktu { font-size: 11px; color: #16a34a; }
+  .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; }
+  .check-circle.checked { background: #16a34a; border-color: #16a34a; color: white; }
+  .tur-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .tur-card:active { background: #f5f5f3; }
+  .tur-info { flex: 1; }
+  .tur-name { font-size: 14px; font-weight: 500; color: #1a1a18; margin: 0 0 2px; }
+  .tur-date { font-size: 11px; color: #888; margin: 0; }
+  .tur-del { background: none; border: none; color: #ccc; font-size: 20px; padding: 4px; cursor: pointer; touch-action: manipulation; }
+  .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
+  .status { font-size: 12px; text-align: center; min-height: 18px; margin-bottom: 6px; }
+  .loading { text-align: center; color: #888; font-size: 13px; padding: 1.5rem 0; }
+  .hint { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.5; }
+  .container { max-width: 640px; margin: 0 auto; }
+  .belum-list { margin-top: 8px; padding: 10px 12px; background: #fef2f2; border-radius: 8px; font-size: 12px; color: #dc2626; line-height: 1.8; }
+  .belum-title { font-size: 11px; font-weight: 500; color: #dc2626; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Absensi Peserta</h1>
+
+<div id="view-list">
+  <div class="tab-row">
+    <div class="tab active" id="tab-absen" onclick="switchTab('absen')">📋 Absensi</div>
+    <div class="tab" id="tab-buat" onclick="switchTab('buat')">+ Buat Tur</div>
+  </div>
+
+  <div id="panel-absen">
+    <div id="tur-list"><p class="loading">Memuat...</p></div>
+  </div>
+
+  <div id="panel-buat" style="display:none;">
+    <div class="card">
+      <p class="card-title">Buat Sesi Absensi Baru</p>
+      <div class="field">
+        <label>Nama Tur</label>
+        <input type="text" id="inp-tur-nama" placeholder="cth: Tur Eropa Barat Mei 2026">
+      </div>
+      <div class="field">
+        <label>Tanggal</label>
+        <input type="date" id="inp-tur-tgl">
+      </div>
+      <div class="field">
+        <label>Daftar Nama Peserta</label>
+        <textarea id="inp-peserta" placeholder="Tulis satu nama per baris:&#10;Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi&#10;..."></textarea>
+        <span class="hint">Tulis satu nama per baris. Nama ini akan muncul saat absensi.</span>
+      </div>
+    </div>
+    <div class="status" id="status-buat"></div>
+    <div class="tappable btn-primary" id="btn-buat-tur">Simpan & Mulai Absensi</div>
+  </div>
+</div>
+
+<div id="view-absen" style="display:none;">
+  <button class="btn-back" id="btn-back">← Kembali</button>
+  <div id="absen-header"></div>
+  <div class="stat-row" id="absen-stat"></div>
+  <div class="progress-wrap"><div class="progress-fill" id="absen-progress" style="width:0%"></div></div>
+  <div id="belum-container"></div>
+  <div id="peserta-list"><p class="loading">Memuat...</p></div>
+  <div style="margin-top:1rem;">
+    <div class="tappable btn-danger" id="btn-reset">🔄 Reset Absensi</div>
+  </div>
+</div>
+
+<div id="jsonp-container" style="display:none;"></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
+let cbCount = 0;
+let activeTurId = null;
+let activeTurNama = '';
+
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb' + (++cbCount);
+    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('Timeout')); }, 15000);
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.getElementById('jsonp-container').innerHTML = '';
+      resolve(data);
+    };
+    const url = API + '?' + new URLSearchParams({ ...params, callback: cbName }).toString();
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('Script error')); };
+    document.getElementById('jsonp-container').appendChild(s);
+  });
+}
+
+function tap(el, fn) {
+  if (!el) return;
+  let moved = false;
+  el.addEventListener('touchstart', () => { moved = false; }, { passive: true });
+  el.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  el.addEventListener('touchend', e => { if (!moved) { e.preventDefault(); fn(); } });
+  el.addEventListener('click', fn);
+}
+
+function switchTab(t) {
+  ['absen','buat'].forEach(id => {
+    document.getElementById('panel-'+id).style.display = id===t ? '' : 'none';
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  if (t==='absen') loadTurList();
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status-buat');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = type==='ok' ? 'green' : type==='err' ? 'red' : '#888';
+}
+
+async function loadTurList() {
+  const c = document.getElementById('tur-list');
+  c.innerHTML = '<p class="loading">Memuat...</p>';
+  try {
+    const res = await jsonp({ action: 'get_tur' });
+    const data = (res.data || []).reverse();
+    if (!data.length) {
+      c.innerHTML = '<p class="empty">Belum ada sesi absensi.<br>Tap "+ Buat Tur" untuk mulai.</p>';
+      return;
+    }
+    c.innerHTML = data.map(t => `
+      <div class="tur-card" id="tur-${t.id}">
+        <div class="tur-info" onclick="bukaAbsensi('${t.id}', '${t.nama_tur}')">
+          <p class="tur-name">${t.nama_tur}</p>
+          <p class="tur-date">${t.tanggal || 'Tanpa tanggal'}</p>
+        </div>
+        <button class="tur-del" onclick="hapusTur('${t.id}', event)">×</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    c.innerHTML = '<p class="empty">Gagal memuat data.</p>';
+  }
+}
+
+async function buatTur() {
+  const nama = document.getElementById('inp-tur-nama').value.trim();
+  const tgl = document.getElementById('inp-tur-tgl').value;
+  const pesertaRaw = document.getElementById('inp-peserta').value.trim();
+  if (!nama) { setStatus('Nama tur wajib diisi.', 'err'); return; }
+  if (!pesertaRaw) { setStatus('Daftar peserta wajib diisi.', 'err'); return; }
+  const peserta = pesertaRaw.split('\n').map(n => n.trim()).filter(Boolean).join('|');
+  setStatus('Menyimpan...', '');
+  document.getElementById('btn-buat-tur').style.opacity = '0.5';
+  try {
+    const res = await jsonp({ action: 'buat_tur', nama_tur: nama, tanggal: tgl, peserta });
+    if (res.success) {
+      document.getElementById('inp-tur-nama').value = '';
+      document.getElementById('inp-tur-tgl').value = '';
+      document.getElementById('inp-peserta').value = '';
+      setStatus('✓ Sesi berhasil dibuat!', 'ok');
+      setTimeout(() => {
+        setStatus('');
+        switchTab('absen');
+        bukaAbsensi(res.id, nama);
+      }, 800);
+    } else {
+      setStatus('Gagal: ' + (res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('Gagal menyimpan. Cek koneksi.', 'err');
+  }
+  document.getElementById('btn-buat-tur').style.opacity = '';
+}
+
+async function hapusTur(id, e) {
+  e.stopPropagation();
+  if (!confirm('Hapus sesi ini beserta data absensinya?')) return;
+  await jsonp({ action: 'hapus_tur', id });
+  loadTurList();
+}
+
+async function bukaAbsensi(turId, turNama) {
+  activeTurId = turId;
+  activeTurNama = turNama;
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-absen').style.display = '';
+  document.getElementById('absen-header').innerHTML = `
+    <div style="margin-bottom:1rem;">
+      <p style="font-size:16px; font-weight:500;">${turNama}</p>
+    </div>
+  `;
+  await loadPeserta();
+}
+
+async function loadPeserta() {
+  const c = document.getElementById('peserta-list');
+  c.innerHTML = '<p class="loading">Memuat...</p>';
+  try {
+    const res = await jsonp({ action: 'get_peserta', tur_id: activeTurId });
+    const data = res.data || [];
+    const hadir = data.filter(p => p.hadir).length;
+    const total = data.length;
+    const belum = data.filter(p => !p.hadir);
+    const pct = total ? Math.round(hadir/total*100) : 0;
+
+    document.getElementById('absen-stat').innerHTML = `
+      <div class="stat"><div class="stat-num" style="color:#16a34a;">${hadir}</div><div class="stat-lbl">Hadir ✓</div></div>
+      <div class="stat"><div class="stat-num" style="color:#dc2626;">${total-hadir}</div><div class="stat-lbl">Belum</div></div>
+      <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">Total</div></div>
+    `;
+    document.getElementById('absen-progress').style.width = pct + '%';
+
+    if (belum.length && hadir > 0) {
+      document.getElementById('belum-container').innerHTML = `
+        <div class="belum-list">
+          <div class="belum-title">⚠️ Belum hadir:</div>
+          ${belum.map(p => p.nama).join(', ')}
+        </div>
+      `;
+    } else {
+      document.getElementById('belum-container').innerHTML = '';
+    }
+
+    if (!data.length) { c.innerHTML = '<p class="empty">Tidak ada peserta.</p>'; return; }
+
+    c.innerHTML = `<div>` + data.map((p, i) => `
+      <div class="peserta-row" onclick="toggleCheckin('${p.nama}', this)">
+        <span class="peserta-num">${i+1}</span>
+        <div style="flex:1;">
+          <div class="peserta-name">${p.nama}</div>
+          ${p.hadir && p.waktu ? '<div class="peserta-waktu">✓ ' + formatWaktu(p.waktu) + '</div>' : ''}
+        </div>
+        <div class="check-circle ${p.hadir ? 'checked' : ''}">${p.hadir ? '✓' : ''}</div>
+      </div>
+    `).join('') + `</div>`;
+
+  } catch(e) {
+    c.innerHTML = '<p class="empty">Gagal memuat peserta.</p>';
+  }
+}
+
+function formatWaktu(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return ''; }
+}
+
+async function toggleCheckin(nama, row) {
+  const circle = row.querySelector('.check-circle');
+  const wasChecked = circle.classList.contains('checked');
+  if (wasChecked) {
+    circle.classList.remove('checked');
+    circle.textContent = '';
+  } else {
+    circle.classList.add('checked');
+    circle.textContent = '✓';
+  }
+  try {
+    await jsonp({ action: 'checkin', tur_id: activeTurId, nama });
+    await loadPeserta();
+  } catch(e) {
+    if (wasChecked) { circle.classList.add('checked'); circle.textContent = '✓'; }
+    else { circle.classList.remove('checked'); circle.textContent = ''; }
+  }
+}
+
+async function resetAbsensi() {
+  if (!confirm('Reset semua absensi untuk sesi ini?')) return;
+  await jsonp({ action: 'reset_absensi', tur_id: activeTurId });
+  loadPeserta();
+}
+
+function kembali() {
+  document.getElementById('view-absen').style.display = 'none';
+  document.getElementById('view-list').style.display = '';
+  activeTurId = null;
+  loadTurList();
+}
+
+tap(document.getElementById('btn-buat-tur'), buatTur);
+tap(document.getElementById('btn-reset'), resetAbsensi);
+tap(document.getElementById('btn-back'), kembali);
+
+loadTurList();
+</script>
+</body>
+</html>
