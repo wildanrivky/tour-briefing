@@ -8,127 +8,158 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
-  h1 { font-size: 17px; font-weight: 500; margin-bottom: 1rem; }
-  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
-  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
-  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
-  .field:last-child { margin-bottom: 0; }
-  label { font-size: 12px; color: #666; }
-  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
+  .container { max-width: 480px; margin: 0 auto; padding-top: 3rem; }
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header-emoji { font-size: 48px; margin-bottom: 12px; }
+  .header h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .header p { font-size: 13px; color: #888; }
+  .pw-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; color: #666; font-weight: 500; }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { width: 100%; font-size: 18px; padding: 12px 44px 12px 12px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; text-align: center; letter-spacing: 2px; text-transform: uppercase; box-sizing: border-box; }
+  .pw-wrap input:focus { border-color: #1a1a18; }
+  .pw-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 0; touch-action: manipulation; }
+  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; border-radius: 10px; font-size: 15px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; font-weight: 500; }
+  .btn-primary { background: #1a1a18; color: #fff; border: none; margin-top: 12px; }
+  .btn-primary:active { opacity: 0.8; }
+  .err { font-size: 12px; color: #dc2626; text-align: center; min-height: 18px; margin-top: 8px; }
+  .result-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 1.5rem; text-align: center; display: none; margin-bottom: 1rem; }
+  .result-emoji { font-size: 40px; margin-bottom: 10px; }
+  .result-nama { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .result-desc { font-size: 12px; color: #888; margin-bottom: 1.5rem; }
+  .btn-drive { background: #1a1a18; color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; touch-action: manipulation; }
+  .btn-drive:active { opacity: 0.8; }
+  .btn-back-link { margin-top: 12px; font-size: 13px; color: #888; cursor: pointer; text-align: center; touch-action: manipulation; }
+  .admin-btn { text-align: center; margin-top: 3rem; }
+  .admin-link { font-size: 11px; color: #ddd; cursor: pointer; background: none; border: none; font-family: inherit; touch-action: manipulation; }
+  .admin-pw-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; display: none; }
+  .admin-pw-box.show { display: block; }
+  .admin-pw-err { font-size: 12px; color: #dc2626; min-height: 18px; margin-bottom: 8px; text-align: center; }
   .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
   .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
   .tab.active { color: #1a1a18; border-bottom: 2px solid #1a1a18; font-weight: 500; }
-  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
-  .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
-  .btn-primary:active { opacity: 0.8; }
-  .btn-back { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 0 0 12px; display: flex; align-items: center; gap: 4px; touch-action: manipulation; font-family: inherit; }
-  .trip-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  .trip-card:active { background: #f5f5f3; }
-  .trip-emoji { font-size: 24px; flex-shrink: 0; }
-  .trip-info { flex: 1; cursor: pointer; }
-  .trip-name { font-size: 14px; font-weight: 500; color: #1a1a18; margin: 0 0 2px; }
-  .trip-desc { font-size: 11px; color: #888; margin: 0; }
-  .trip-arr { font-size: 18px; color: #ccc; cursor: pointer; }
-  .trip-del { background: none; border: none; color: #ccc; font-size: 20px; padding: 4px; cursor: pointer; touch-action: manipulation; }
-  .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+  .ifield { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .ifield label { font-size: 12px; color: #666; }
+  .ifield input { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
+  .hint { font-size: 11px; color: #888; margin-top: 4px; }
   .status { font-size: 12px; text-align: center; min-height: 18px; margin-bottom: 6px; }
-  .pw-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; text-align: center; }
-  .pw-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
-  .pw-sub { font-size: 12px; color: #888; margin-bottom: 1rem; }
-  .pw-input { text-align: center; font-size: 18px; letter-spacing: 4px; font-weight: 500; margin-bottom: 10px; }
-  .pw-err { font-size: 12px; color: #dc2626; min-height: 18px; margin-bottom: 8px; }
-  .hint { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.5; }
-  .container { max-width: 640px; margin: 0 auto; }
   .loading { text-align: center; color: #888; font-size: 13px; padding: 1.5rem 0; }
-  .admin-btn { text-align: center; margin-top: 2rem; }
-  .admin-link { font-size: 11px; color: #ccc; cursor: pointer; touch-action: manipulation; background: none; border: none; font-family: inherit; }
-  .admin-pw-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; display: none; }
-  .admin-pw-box.show { display: block; }
+  .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
+  .trip-card { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .trip-emoji { font-size: 20px; flex-shrink: 0; }
+  .trip-info { flex: 1; }
+  .trip-name { font-size: 13px; font-weight: 500; color: #1a1a18; margin: 0 0 2px; }
+  .trip-id { font-size: 10px; color: #aaa; margin: 0; }
+  .trip-del { background: none; border: none; color: #ccc; font-size: 20px; padding: 4px; cursor: pointer; touch-action: manipulation; }
+  .admin-container { max-width: 640px; margin: 0 auto; }
 </style>
 </head>
 <body>
-<div class="container">
-<h1>📸 Foto Trip</h1>
 
-<div id="view-list">
-  <div class="tab-row" id="tab-row">
-    <div class="tab active" id="tab-lihat" onclick="switchTab('lihat')">📁 Trip</div>
-  </div>
-
-  <div id="panel-lihat">
-    <div id="trip-list"><p class="loading">Memuat...</p></div>
-  </div>
-
-  <div id="panel-tambah" style="display:none;">
-    <div class="card">
-      <p class="card-title">Tambah Trip Baru</p>
-      <div class="field">
-        <label>Nama Trip</label>
-        <input type="text" id="inp-trip-nama" placeholder="cth: Eropa Barat — Mei 2026">
-      </div>
-      <div class="field">
-        <label>Deskripsi (opsional)</label>
-        <input type="text" id="inp-trip-desc" placeholder="cth: Brussels · Bruges · Amsterdam">
-      </div>
-      <div class="field">
-        <label>Emoji</label>
-        <input type="text" id="inp-trip-emoji" placeholder="cth: 🇧🇪" maxlength="4" value="📁">
-      </div>
-      <div class="field">
-        <label>Google Drive Folder ID</label>
-        <input type="text" id="inp-trip-folderid" placeholder="cth: 1ggnH5BxtUJ3Q7if3Yrpfwu-tJTYKNSI6">
-        <span class="hint">Ambil dari link Drive: drive.google.com/drive/folders/<b>FOLDER_ID</b></span>
-      </div>
-      <div class="field">
-        <label>Password untuk peserta</label>
-        <input type="text" id="inp-trip-pw" placeholder="cth: eropa2026">
-        <span class="hint">Bagikan password ini ke peserta trip.</span>
-      </div>
+<!-- VIEW PESERTA -->
+<div id="view-peserta">
+  <div class="container">
+    <div class="header">
+      <div class="header-emoji">📸</div>
+      <h1>Foto Trip</h1>
+      <p>Masukkan password trip kamu</p>
     </div>
-    <div class="status" id="status-tambah"></div>
-    <div class="tappable btn-primary" id="btn-tambah-trip">Simpan Trip</div>
-  </div>
 
-  <div class="admin-btn">
-    <button class="admin-link" id="btn-show-admin-pw" onclick="toggleAdminPw()">⚙️ Admin</button>
-    <div class="admin-pw-box" id="admin-pw-box">
+    <div class="pw-card">
       <div class="field">
-        <label>Password Admin</label>
-        <input type="password" id="inp-admin-pw" placeholder="Masukkan password admin">
+        <label>Password Trip</label>
+        <div class="pw-wrap">
+          <input type="password" id="inp-password" placeholder="••••••" autocomplete="off">
+          <button class="pw-eye" id="btn-show-pw">👁️</button>
+        </div>
       </div>
-      <div class="pw-err" id="admin-pw-err"></div>
-      <div class="tappable btn-primary" id="btn-masuk-admin">Masuk Admin</div>
+      <div class="tappable btn-primary" id="btn-cek-pw">Cari Foto →</div>
+      <div class="err" id="pw-err"></div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="result-emoji" id="result-emoji">📁</div>
+      <div class="result-nama" id="result-nama"></div>
+      <div class="result-desc" id="result-desc"></div>
+      <a id="btn-buka-drive" href="#" class="btn-drive">📂 Buka Folder Foto</a>
+      <div class="btn-back-link" id="btn-cari-lagi">← Cari dengan password lain</div>
+    </div>
+
+    <div class="admin-btn">
+      <button class="admin-link" onclick="toggleAdminPw()">⚙️</button>
+      <div class="admin-pw-box" id="admin-pw-box">
+        <div class="ifield">
+          <label>Password Admin</label>
+          <input type="password" id="inp-admin-pw" placeholder="Password admin">
+        </div>
+        <div class="admin-pw-err" id="admin-pw-err"></div>
+        <div class="tappable btn-primary" id="btn-masuk-admin" style="margin-top:0;">Masuk Admin</div>
+      </div>
     </div>
   </div>
 </div>
 
-<div id="view-password" style="display:none;">
-  <button class="btn-back" id="btn-back-pw">← Kembali</button>
-  <div class="pw-box">
-    <div class="pw-title" id="pw-trip-nama"></div>
-    <div class="pw-sub">Masukkan password untuk melihat foto</div>
-    <input type="password" class="pw-input" id="inp-password" placeholder="••••••" autocomplete="off">
-    <div class="pw-err" id="pw-err"></div>
-    <div class="tappable btn-primary" id="btn-cek-pw">Buka Foto</div>
+<!-- VIEW ADMIN -->
+<div id="view-admin" style="display:none;">
+  <div class="admin-container" style="padding: 1rem 1rem 4rem;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+      <button onclick="keluarAdmin()" style="background:none;border:none;font-size:13px;color:#666;cursor:pointer;padding:0;font-family:inherit;touch-action:manipulation;">← Keluar</button>
+      <h1 style="font-size:17px;font-weight:500;">⚙️ Admin Foto</h1>
+    </div>
+
+    <div class="tab-row">
+      <div class="tab active" id="tab-daftar" onclick="switchAdminTab('daftar')">📁 Daftar</div>
+      <div class="tab" id="tab-tambah" onclick="switchAdminTab('tambah')">+ Tambah</div>
+      <div class="tab" id="tab-import" onclick="switchAdminTab('import')">⬇️ Import Drive</div>
+    </div>
+
+    <div id="panel-daftar">
+      <div id="trip-list-admin"><p class="loading">Memuat...</p></div>
+    </div>
+
+    <div id="panel-tambah" style="display:none;">
+      <div class="card">
+        <p class="card-title">Tambah Trip Baru</p>
+        <div class="ifield"><label>Nama Trip</label><input type="text" id="inp-trip-nama" placeholder="cth: Eropa Barat — Mei 2026"></div>
+        <div class="ifield"><label>Emoji</label><input type="text" id="inp-trip-emoji" maxlength="4" value="📁"></div>
+        <div class="ifield"><label>Google Drive Folder ID</label><input type="text" id="inp-trip-folderid" placeholder="cth: 1ggnH5Bxt..."></div>
+        <div class="ifield"><label>Password untuk peserta</label><input type="text" id="inp-trip-pw" placeholder="cth: eropa2026"></div>
+      </div>
+      <div class="status" id="status-tambah"></div>
+      <div class="tappable btn-primary" id="btn-tambah-trip">Simpan Trip</div>
+    </div>
+
+    <div id="panel-import" style="display:none;">
+      <div class="card">
+        <p class="card-title">Import dari Google Drive</p>
+        <p style="font-size:13px;color:#666;margin-bottom:12px;line-height:1.6;">Masukkan Folder ID dari folder utama Drive. Semua sub-folder otomatis masuk ke database.</p>
+        <div class="ifield"><label>Folder ID Utama Drive</label><input type="text" id="inp-import-folder" placeholder="cth: 1DaWBXUx1BlWV6..."></div>
+        <div class="ifield">
+          <label>Password default (opsional)</label>
+          <input type="text" id="inp-import-pw" placeholder="cth: trip2024">
+          <span class="hint">Bisa diubah satu-satu setelah import.</span>
+        </div>
+      </div>
+      <div class="status" id="status-import"></div>
+      <div class="tappable btn-primary" id="btn-import">⬇️ Import Sekarang</div>
+    </div>
   </div>
 </div>
 
 <div id="jsonp-container" style="display:none;"></div>
-</div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
 const ADMIN_PASSWORD = 'borobudur';
 let cbCount = 0;
-let activeTripId = null;
-let activeTripNama = '';
-let activeTripDesc = '';
-let isAdmin = false;
 
 function jsonp(params) {
   return new Promise((resolve, reject) => {
     const cbName = '_cb' + (++cbCount);
-    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('Timeout')); }, 15000);
+    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('Timeout')); }, 30000);
     window[cbName] = function(data) {
       clearTimeout(timeout); delete window[cbName];
       document.getElementById('jsonp-container').innerHTML = '';
@@ -151,134 +182,35 @@ function tap(el, fn) {
   el.addEventListener('click', fn);
 }
 
-function showView(v) {
-  ['list','password'].forEach(id => {
-    document.getElementById('view-'+id).style.display = id===v ? '' : 'none';
-  });
-}
-
-function switchTab(t) {
-  ['lihat','tambah'].forEach(id => {
-    const panel = document.getElementById('panel-'+id);
-    const tab = document.getElementById('tab-'+id);
-    if (panel) panel.style.display = id===t ? '' : 'none';
-    if (tab) tab.classList.toggle('active', id===t);
-  });
-  if (t==='lihat') loadTripList();
-}
-
-function toggleAdminPw() {
-  const box = document.getElementById('admin-pw-box');
-  box.classList.toggle('show');
-  if (box.classList.contains('show')) document.getElementById('inp-admin-pw').focus();
-}
-
-function masukAdmin() {
-  const pw = document.getElementById('inp-admin-pw').value.trim();
-  if (pw === ADMIN_PASSWORD) {
-    isAdmin = true;
-    document.getElementById('admin-pw-box').classList.remove('show');
-    document.getElementById('inp-admin-pw').value = '';
-    document.getElementById('admin-pw-err').textContent = '';
-    const tabRow = document.getElementById('tab-row');
-    if (!document.getElementById('tab-tambah')) {
-      tabRow.innerHTML += `<div class="tab" id="tab-tambah" onclick="switchTab('tambah')">+ Tambah Trip</div>`;
-    }
-    document.getElementById('btn-show-admin-pw').style.display = 'none';
-    loadTripList();
-  } else {
-    document.getElementById('admin-pw-err').textContent = '❌ Password salah';
-  }
-}
-
-function setStatus(msg, type) {
-  const el = document.getElementById('status-tambah');
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
   if (!el) return;
   el.textContent = msg;
   el.style.color = type==='ok' ? '#16a34a' : type==='err' ? '#dc2626' : '#888';
 }
 
-async function loadTripList() {
-  const c = document.getElementById('trip-list');
-  c.innerHTML = '<p class="loading">Memuat...</p>';
-  try {
-    const res = await jsonp({ action: 'get_trip' });
-    const data = (res.data || []).reverse();
-    if (!data.length) { c.innerHTML = '<p class="empty">Belum ada trip tersedia.</p>'; return; }
-    c.innerHTML = data.map(t => `
-      <div class="trip-card">
-        <span class="trip-emoji">${t.emoji || '📁'}</span>
-        <div class="trip-info" onclick="bukaPw('${t.id}', '${(t.nama||'').replace(/'/g,"\\'")}', '${(t.deskripsi||'').replace(/'/g,"\\'")}')">
-          <p class="trip-name">${t.nama}</p>
-          ${t.deskripsi ? '<p class="trip-desc">'+t.deskripsi+'</p>' : ''}
-        </div>
-        <span class="trip-arr" onclick="bukaPw('${t.id}', '${(t.nama||'').replace(/'/g,"\\'")}', '${(t.deskripsi||'').replace(/'/g,"\\'")}')">›</span>
-        ${isAdmin ? `<button class="trip-del" onclick="hapusTrip('${t.id}', event)">×</button>` : ''}
-      </div>
-    `).join('');
-  } catch(e) {
-    c.innerHTML = '<p class="empty">Gagal memuat. Cek koneksi.</p>';
-  }
-}
-
-async function tambahTrip() {
-  const nama = document.getElementById('inp-trip-nama').value.trim();
-  const desc = document.getElementById('inp-trip-desc').value.trim();
-  const emoji = document.getElementById('inp-trip-emoji').value.trim() || '📁';
-  const folderId = document.getElementById('inp-trip-folderid').value.trim();
-  const password = document.getElementById('inp-trip-pw').value.trim();
-  if (!nama) { setStatus('Nama trip wajib diisi.', 'err'); return; }
-  if (!folderId) { setStatus('Folder ID wajib diisi.', 'err'); return; }
-  if (!password) { setStatus('Password wajib diisi.', 'err'); return; }
-  setStatus('Menyimpan...', '');
-  document.getElementById('btn-tambah-trip').style.opacity = '0.5';
-  try {
-    const res = await jsonp({ action: 'insert_trip', nama, deskripsi: desc, emoji, folder_id: folderId, password });
-    if (res.success) {
-      document.getElementById('inp-trip-nama').value = '';
-      document.getElementById('inp-trip-desc').value = '';
-      document.getElementById('inp-trip-emoji').value = '📁';
-      document.getElementById('inp-trip-folderid').value = '';
-      document.getElementById('inp-trip-pw').value = '';
-      setStatus('✓ Trip tersimpan!', 'ok');
-      setTimeout(() => { setStatus('', ''); switchTab('lihat'); }, 800);
-    } else {
-      setStatus('Gagal: ' + (res.error||''), 'err');
-    }
-  } catch(e) {
-    setStatus('Gagal. Cek koneksi.', 'err');
-  }
-  document.getElementById('btn-tambah-trip').style.opacity = '';
-}
-
-async function hapusTrip(id, e) {
-  e.stopPropagation();
-  if (!confirm('Hapus trip ini?')) return;
-  await jsonp({ action: 'hapus_trip', id });
-  loadTripList();
-}
-
-function bukaPw(id, nama, desc) {
-  activeTripId = id;
-  activeTripNama = nama;
-  activeTripDesc = desc;
-  document.getElementById('pw-trip-nama').textContent = nama;
-  document.getElementById('inp-password').value = '';
-  document.getElementById('pw-err').textContent = '';
-  showView('password');
+// PESERTA
+function toggleShowPw() {
+  const inp = document.getElementById('inp-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
 async function cekPassword() {
-  const pw = document.getElementById('inp-password').value.trim();
+  const pw = document.getElementById('inp-password').value.trim().toUpperCase();
   if (!pw) { document.getElementById('pw-err').textContent = 'Masukkan password dulu.'; return; }
   document.getElementById('pw-err').textContent = '';
   document.getElementById('btn-cek-pw').style.opacity = '0.5';
+  document.getElementById('result-card').style.display = 'none';
   try {
-    const res = await jsonp({ action: 'cek_password', id: activeTripId, password: pw });
+    const res = await jsonp({ action: 'cek_password_by_pw', password: pw });
     if (res.success) {
-      window.location.href = 'https://drive.google.com/drive/folders/' + res.folder_id;
+      document.getElementById('result-emoji').textContent = res.emoji || '📁';
+      document.getElementById('result-nama').textContent = res.nama;
+      document.getElementById('result-desc').textContent = res.deskripsi || '';
+      document.getElementById('btn-buka-drive').href = 'https://drive.google.com/drive/folders/' + res.folder_id;
+      document.getElementById('result-card').style.display = 'block';
     } else {
-      document.getElementById('pw-err').textContent = '❌ ' + (res.error || 'Password salah');
+      document.getElementById('pw-err').textContent = '❌ Password tidak ditemukan.';
     }
   } catch(e) {
     document.getElementById('pw-err').textContent = 'Gagal. Cek koneksi.';
@@ -289,16 +221,131 @@ async function cekPassword() {
 document.getElementById('inp-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') cekPassword();
 });
+
+tap(document.getElementById('btn-show-pw'), toggleShowPw);
+tap(document.getElementById('btn-cek-pw'), cekPassword);
+tap(document.getElementById('btn-cari-lagi'), () => {
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('inp-password').value = '';
+  document.getElementById('inp-password').focus();
+});
+
+// ADMIN
+function toggleAdminPw() {
+  const box = document.getElementById('admin-pw-box');
+  box.classList.toggle('show');
+  if (box.classList.contains('show')) document.getElementById('inp-admin-pw').focus();
+}
+
+function masukAdmin() {
+  const pw = document.getElementById('inp-admin-pw').value.trim();
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('admin-pw-box').classList.remove('show');
+    document.getElementById('inp-admin-pw').value = '';
+    document.getElementById('admin-pw-err').textContent = '';
+    document.getElementById('view-peserta').style.display = 'none';
+    document.getElementById('view-admin').style.display = '';
+    loadTripListAdmin();
+  } else {
+    document.getElementById('admin-pw-err').textContent = '❌ Password salah';
+  }
+}
+
+function keluarAdmin() {
+  document.getElementById('view-admin').style.display = 'none';
+  document.getElementById('view-peserta').style.display = '';
+}
+
+function switchAdminTab(t) {
+  ['daftar','tambah','import'].forEach(id => {
+    const panel = document.getElementById('panel-'+id);
+    const tab = document.getElementById('tab-'+id);
+    if (panel) panel.style.display = id===t ? '' : 'none';
+    if (tab) tab.classList.toggle('active', id===t);
+  });
+  if (t==='daftar') loadTripListAdmin();
+}
+
+async function loadTripListAdmin() {
+  const c = document.getElementById('trip-list-admin');
+  c.innerHTML = '<p class="loading">Memuat...</p>';
+  try {
+    const res = await jsonp({ action: 'get_trip' });
+    const data = (res.data || []).reverse();
+    if (!data.length) { c.innerHTML = '<p class="empty">Belum ada trip.</p>'; return; }
+    c.innerHTML = data.map(t => `
+      <div class="trip-card">
+        <span class="trip-emoji">${t.emoji || '📁'}</span>
+        <div class="trip-info">
+          <p class="trip-name">${t.nama}</p>
+          <p class="trip-id">${t.folder_id}</p>
+        </div>
+        <button class="trip-del" onclick="hapusTrip('${t.id}')">×</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    c.innerHTML = '<p class="empty">Gagal memuat.</p>';
+  }
+}
+
+async function hapusTrip(id) {
+  if (!confirm('Hapus trip ini?')) return;
+  await jsonp({ action: 'hapus_trip', id });
+  loadTripListAdmin();
+}
+
+async function tambahTrip() {
+  const nama = document.getElementById('inp-trip-nama').value.trim();
+  const emoji = document.getElementById('inp-trip-emoji').value.trim() || '📁';
+  const folderId = document.getElementById('inp-trip-folderid').value.trim();
+  const password = document.getElementById('inp-trip-pw').value.trim();
+  if (!nama || !folderId || !password) { setStatus('status-tambah', 'Semua field wajib diisi.', 'err'); return; }
+  setStatus('status-tambah', 'Menyimpan...', '');
+  try {
+    const res = await jsonp({ action: 'insert_trip', nama, deskripsi: '', emoji, folder_id: folderId, password });
+    if (res.success) {
+      document.getElementById('inp-trip-nama').value = '';
+      document.getElementById('inp-trip-emoji').value = '📁';
+      document.getElementById('inp-trip-folderid').value = '';
+      document.getElementById('inp-trip-pw').value = '';
+      setStatus('status-tambah', '✓ Tersimpan!', 'ok');
+      setTimeout(() => { setStatus('status-tambah','',''); switchAdminTab('daftar'); }, 800);
+    } else {
+      setStatus('status-tambah', 'Gagal: '+(res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('status-tambah', 'Gagal. Cek koneksi.', 'err');
+  }
+}
+
+async function importDrive() {
+  const folderId = document.getElementById('inp-import-folder').value.trim();
+  const pw = document.getElementById('inp-import-pw').value.trim();
+  if (!folderId) { setStatus('status-import', 'Folder ID wajib diisi.', 'err'); return; }
+  setStatus('status-import', 'Mengimport... mohon tunggu...', '');
+  document.getElementById('btn-import').style.opacity = '0.5';
+  try {
+    const res = await jsonp({ action: 'import_drive', folder_id: folderId, default_password: pw });
+    if (res.success) {
+      setStatus('status-import', '✓ ' + res.count + ' folder berhasil diimport!', 'ok');
+      document.getElementById('inp-import-folder').value = '';
+      document.getElementById('inp-import-pw').value = '';
+    } else {
+      setStatus('status-import', 'Gagal: '+(res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('status-import', 'Gagal. Cek koneksi.', 'err');
+  }
+  document.getElementById('btn-import').style.opacity = '';
+}
+
 document.getElementById('inp-admin-pw').addEventListener('keydown', e => {
   if (e.key === 'Enter') masukAdmin();
 });
 
-tap(document.getElementById('btn-tambah-trip'), tambahTrip);
-tap(document.getElementById('btn-cek-pw'), cekPassword);
-tap(document.getElementById('btn-back-pw'), () => showView('list'));
 tap(document.getElementById('btn-masuk-admin'), masukAdmin);
-
-loadTripList();
+tap(document.getElementById('btn-tambah-trip'), tambahTrip);
+tap(document.getElementById('btn-import'), importDrive);
 </script>
 </body>
 </html>
