@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foto Trip — Tour Leader</title>
+<title>Foto Trip</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
@@ -20,7 +20,6 @@
   .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
   .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
   .btn-primary:active { opacity: 0.8; }
-  .btn-secondary { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; margin-bottom: 8px; }
   .btn-back { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 0 0 12px; display: flex; align-items: center; gap: 4px; touch-action: manipulation; font-family: inherit; }
   .trip-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .trip-card:active { background: #f5f5f3; }
@@ -32,10 +31,6 @@
   .trip-del { background: none; border: none; color: #ccc; font-size: 20px; padding: 4px; cursor: pointer; touch-action: manipulation; }
   .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
   .status { font-size: 12px; text-align: center; min-height: 18px; margin-bottom: 6px; }
-  .embed-wrap { border-radius: 12px; overflow: hidden; border: 0.5px solid rgba(0,0,0,0.12); background: #fff; }
-  .embed-toolbar { background: #f8f9fa; padding: 8px 12px; border-bottom: 0.5px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; }
-  .embed-label { font-size: 12px; color: #666; }
-  .embed-open { font-size: 12px; color: #1a73e8; text-decoration: none; }
   .pw-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; text-align: center; }
   .pw-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
   .pw-sub { font-size: 12px; color: #888; margin-bottom: 1rem; }
@@ -44,6 +39,10 @@
   .hint { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.5; }
   .container { max-width: 640px; margin: 0 auto; }
   .loading { text-align: center; color: #888; font-size: 13px; padding: 1.5rem 0; }
+  .admin-btn { text-align: center; margin-top: 2rem; }
+  .admin-link { font-size: 11px; color: #ccc; cursor: pointer; touch-action: manipulation; background: none; border: none; font-family: inherit; }
+  .admin-pw-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; display: none; }
+  .admin-pw-box.show { display: block; }
 </style>
 </head>
 <body>
@@ -52,9 +51,8 @@
 
 <!-- VIEW LIST -->
 <div id="view-list">
-  <div class="tab-row">
+  <div class="tab-row" id="tab-row">
     <div class="tab active" id="tab-lihat" onclick="switchTab('lihat')">📁 Trip</div>
-    <div class="tab" id="tab-tambah" onclick="switchTab('tambah')">+ Tambah Trip</div>
   </div>
 
   <div id="panel-lihat">
@@ -90,6 +88,19 @@
     <div class="status" id="status-tambah"></div>
     <div class="tappable btn-primary" id="btn-tambah-trip">Simpan Trip</div>
   </div>
+
+  <!-- Admin button -->
+  <div class="admin-btn">
+    <button class="admin-link" id="btn-show-admin-pw" onclick="toggleAdminPw()">⚙️ Admin</button>
+    <div class="admin-pw-box" id="admin-pw-box">
+      <div class="field">
+        <label>Password Admin</label>
+        <input type="password" id="inp-admin-pw" placeholder="Masukkan password admin">
+      </div>
+      <div class="pw-err" id="admin-pw-err"></div>
+      <div class="tappable btn-primary" id="btn-masuk-admin">Masuk Admin</div>
+    </div>
+  </div>
 </div>
 
 <!-- VIEW PASSWORD -->
@@ -104,28 +115,17 @@
   </div>
 </div>
 
-<!-- VIEW FOTO -->
-<div id="view-foto" style="display:none;">
-  <button class="btn-back" id="btn-back-foto">← Kembali</button>
-  <div id="foto-header" style="margin-bottom:1rem;"></div>
-  <div class="embed-wrap">
-    <div class="embed-toolbar">
-      <span class="embed-label">🗂️ Google Drive</span>
-      <a id="embed-open-link" href="#" target="_blank" class="embed-open">Buka di Drive ↗</a>
-    </div>
-    <iframe id="drive-embed" src="" width="100%" height="520" frameborder="0" allowfullscreen style="display:block;"></iframe>
-  </div>
-</div>
-
 <div id="jsonp-container" style="display:none;"></div>
 </div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
+const ADMIN_PASSWORD = 'borobudur';
 let cbCount = 0;
 let activeTripId = null;
 let activeTripNama = '';
 let activeTripDesc = '';
+let isAdmin = false;
 
 function jsonp(params) {
   return new Promise((resolve, reject) => {
@@ -154,21 +154,52 @@ function tap(el, fn) {
 }
 
 function showView(v) {
-  ['list','password','foto'].forEach(id => {
+  ['list','password'].forEach(id => {
     document.getElementById('view-'+id).style.display = id===v ? '' : 'none';
   });
 }
 
 function switchTab(t) {
   ['lihat','tambah'].forEach(id => {
-    document.getElementById('panel-'+id).style.display = id===t ? '' : 'none';
-    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+    const panel = document.getElementById('panel-'+id);
+    const tab = document.getElementById('tab-'+id);
+    if (panel) panel.style.display = id===t ? '' : 'none';
+    if (tab) tab.classList.toggle('active', id===t);
   });
   if (t==='lihat') loadTripList();
 }
 
+function toggleAdminPw() {
+  const box = document.getElementById('admin-pw-box');
+  box.classList.toggle('show');
+  if (box.classList.contains('show')) {
+    document.getElementById('inp-admin-pw').focus();
+  }
+}
+
+function masukAdmin() {
+  const pw = document.getElementById('inp-admin-pw').value.trim();
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    document.getElementById('admin-pw-box').classList.remove('show');
+    document.getElementById('inp-admin-pw').value = '';
+    document.getElementById('admin-pw-err').textContent = '';
+    // tambah tab admin
+    const tabRow = document.getElementById('tab-row');
+    if (!document.getElementById('tab-tambah')) {
+      tabRow.innerHTML += `<div class="tab" id="tab-tambah" onclick="switchTab('tambah')">+ Tambah Trip</div>`;
+    }
+    // sembunyikan tombol admin
+    document.getElementById('btn-show-admin-pw').style.display = 'none';
+    loadTripList();
+  } else {
+    document.getElementById('admin-pw-err').textContent = '❌ Password salah';
+  }
+}
+
 function setStatus(msg, type) {
   const el = document.getElementById('status-tambah');
+  if (!el) return;
   el.textContent = msg;
   el.style.color = type==='ok' ? '#16a34a' : type==='err' ? '#dc2626' : '#888';
 }
@@ -180,7 +211,7 @@ async function loadTripList() {
     const res = await jsonp({ action: 'get_trip' });
     const data = (res.data || []).reverse();
     if (!data.length) {
-      c.innerHTML = '<p class="empty">Belum ada trip.<br>Tap "+ Tambah Trip" untuk mulai.</p>';
+      c.innerHTML = '<p class="empty">Belum ada trip tersedia.</p>';
       return;
     }
     c.innerHTML = data.map(t => `
@@ -191,7 +222,7 @@ async function loadTripList() {
           ${t.deskripsi ? '<p class="trip-desc">'+t.deskripsi+'</p>' : ''}
         </div>
         <span class="trip-arr" onclick="bukaPw('${t.id}', '${(t.nama||'').replace(/'/g,"\\'")}', '${(t.deskripsi||'').replace(/'/g,"\\'")}')">›</span>
-        <button class="trip-del" onclick="hapusTrip('${t.id}', event)">×</button>
+        ${isAdmin ? `<button class="trip-del" onclick="hapusTrip('${t.id}', event)">×</button>` : ''}
       </div>
     `).join('');
   } catch(e) {
@@ -254,7 +285,8 @@ async function cekPassword() {
   try {
     const res = await jsonp({ action: 'cek_password', id: activeTripId, password: pw });
     if (res.success) {
-      bukaFoto(res.folder_id);
+      window.open('https://drive.google.com/drive/folders/' + res.folder_id, '_blank');
+      showView('list');
     } else {
       document.getElementById('pw-err').textContent = '❌ ' + (res.error || 'Password salah');
     }
@@ -264,36 +296,18 @@ async function cekPassword() {
   document.getElementById('btn-cek-pw').style.opacity = '';
 }
 
-function bukaFoto(folderId) {
-  showView('foto');
-  document.getElementById('foto-header').innerHTML = `
-    <p style="font-size:16px;font-weight:500;">${activeTripNama}</p>
-    ${activeTripDesc ? '<p style="font-size:12px;color:#888;margin-top:2px;">'+activeTripDesc+'</p>' : ''}
-  `;
-  document.getElementById('drive-embed').src = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
-  document.getElementById('embed-open-link').href = `https://drive.google.com/drive/folders/${folderId}`;
-}
-
-function kembaliDariPw() {
-  showView('list');
-  loadTripList();
-}
-
-function kembaliDariFoto() {
-  document.getElementById('drive-embed').src = '';
-  showView('list');
-  loadTripList();
-}
-
-// enter key di password field
 document.getElementById('inp-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') cekPassword();
 });
 
+document.getElementById('inp-admin-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') masukAdmin();
+});
+
 tap(document.getElementById('btn-tambah-trip'), tambahTrip);
 tap(document.getElementById('btn-cek-pw'), cekPassword);
-tap(document.getElementById('btn-back-pw'), kembaliDariPw);
-tap(document.getElementById('btn-back-foto'), kembaliDariFoto);
+tap(document.getElementById('btn-back-pw'), () => showView('list'));
+tap(document.getElementById('btn-masuk-admin'), masukAdmin);
 
 loadTripList();
 </script>
