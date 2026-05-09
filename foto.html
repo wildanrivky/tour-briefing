@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Foto Trip</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,7 +50,6 @@
 <div class="container">
 <h1>📸 Foto Trip</h1>
 
-<!-- VIEW LIST -->
 <div id="view-list">
   <div class="tab-row" id="tab-row">
     <div class="tab active" id="tab-lihat" onclick="switchTab('lihat')">📁 Trip</div>
@@ -89,7 +89,6 @@
     <div class="tappable btn-primary" id="btn-tambah-trip">Simpan Trip</div>
   </div>
 
-  <!-- Admin button -->
   <div class="admin-btn">
     <button class="admin-link" id="btn-show-admin-pw" onclick="toggleAdminPw()">⚙️ Admin</button>
     <div class="admin-pw-box" id="admin-pw-box">
@@ -103,7 +102,6 @@
   </div>
 </div>
 
-<!-- VIEW PASSWORD -->
 <div id="view-password" style="display:none;">
   <button class="btn-back" id="btn-back-pw">← Kembali</button>
   <div class="pw-box">
@@ -172,9 +170,7 @@ function switchTab(t) {
 function toggleAdminPw() {
   const box = document.getElementById('admin-pw-box');
   box.classList.toggle('show');
-  if (box.classList.contains('show')) {
-    document.getElementById('inp-admin-pw').focus();
-  }
+  if (box.classList.contains('show')) document.getElementById('inp-admin-pw').focus();
 }
 
 function masukAdmin() {
@@ -184,12 +180,10 @@ function masukAdmin() {
     document.getElementById('admin-pw-box').classList.remove('show');
     document.getElementById('inp-admin-pw').value = '';
     document.getElementById('admin-pw-err').textContent = '';
-    // tambah tab admin
     const tabRow = document.getElementById('tab-row');
     if (!document.getElementById('tab-tambah')) {
       tabRow.innerHTML += `<div class="tab" id="tab-tambah" onclick="switchTab('tambah')">+ Tambah Trip</div>`;
     }
-    // sembunyikan tombol admin
     document.getElementById('btn-show-admin-pw').style.display = 'none';
     loadTripList();
   } else {
@@ -210,10 +204,7 @@ async function loadTripList() {
   try {
     const res = await jsonp({ action: 'get_trip' });
     const data = (res.data || []).reverse();
-    if (!data.length) {
-      c.innerHTML = '<p class="empty">Belum ada trip tersedia.</p>';
-      return;
-    }
+    if (!data.length) { c.innerHTML = '<p class="empty">Belum ada trip tersedia.</p>'; return; }
     c.innerHTML = data.map(t => `
       <div class="trip-card">
         <span class="trip-emoji">${t.emoji || '📁'}</span>
@@ -285,8 +276,7 @@ async function cekPassword() {
   try {
     const res = await jsonp({ action: 'cek_password', id: activeTripId, password: pw });
     if (res.success) {
-      window.open('https://drive.google.com/drive/folders/' + res.folder_id, '_blank');
-      showView('list');
+      window.location.href = 'https://drive.google.com/drive/folders/' + res.folder_id;
     } else {
       document.getElementById('pw-err').textContent = '❌ ' + (res.error || 'Password salah');
     }
@@ -299,7 +289,6 @@ async function cekPassword() {
 document.getElementById('inp-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') cekPassword();
 });
-
 document.getElementById('inp-admin-pw').addEventListener('keydown', e => {
   if (e.key === 'Enter') masukAdmin();
 });
