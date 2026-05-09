@@ -21,6 +21,8 @@
   .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
   .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
   .btn-primary:active { opacity: 0.8; }
+  .btn-green { background: #16a34a; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
+  .btn-green:active { opacity: 0.8; }
   .btn-secondary { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; margin-bottom: 8px; }
   .btn-danger { background: #fff; border: 0.5px solid #dc2626; color: #dc2626; margin-bottom: 8px; }
   .btn-back { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 0 0 12px; display: flex; align-items: center; gap: 4px; touch-action: manipulation; }
@@ -29,13 +31,12 @@
   .stat-num { font-size: 24px; font-weight: 500; }
   .stat-lbl { font-size: 10px; color: #888; margin-top: 2px; }
   .progress-wrap { background: #e5e7eb; border-radius: 99px; height: 6px; margin-bottom: 1rem; overflow: hidden; }
-  .progress-fill { height: 100%; background: #16a34a; border-radius: 99px; transition: width 0.3s; }
+  .progress-fill { height: 100%; background: #16a34a; border-radius: 99px; transition: width 0.2s; }
   .peserta-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   .peserta-row:last-child { border-bottom: none; }
   .peserta-num { font-size: 12px; color: #aaa; width: 20px; text-align: center; flex-shrink: 0; }
   .peserta-name { font-size: 14px; color: #1a1a18; flex: 1; }
-  .peserta-waktu { font-size: 11px; color: #16a34a; }
-  .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; }
+  .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.1s; }
   .check-circle.checked { background: #16a34a; border-color: #16a34a; color: white; }
   .tur-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .tur-card:active { background: #f5f5f3; }
@@ -48,8 +49,9 @@
   .loading { text-align: center; color: #888; font-size: 13px; padding: 1.5rem 0; }
   .hint { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.5; }
   .container { max-width: 640px; margin: 0 auto; }
-  .belum-list { margin-top: 8px; padding: 10px 12px; background: #fef2f2; border-radius: 8px; font-size: 12px; color: #dc2626; line-height: 1.8; }
+  .belum-list { margin-top: 8px; padding: 10px 12px; background: #fef2f2; border-radius: 8px; font-size: 12px; color: #dc2626; line-height: 1.8; margin-bottom: 12px; }
   .belum-title { font-size: 11px; font-weight: 500; color: #dc2626; margin-bottom: 4px; }
+  .unsaved-bar { background: #fef9c3; border: 0.5px solid #eab308; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #854d0e; margin-bottom: 10px; text-align: center; }
 </style>
 </head>
 <body>
@@ -61,11 +63,9 @@
     <div class="tab active" id="tab-absen" onclick="switchTab('absen')">📋 Absensi</div>
     <div class="tab" id="tab-buat" onclick="switchTab('buat')">+ Buat Tur</div>
   </div>
-
   <div id="panel-absen">
     <div id="tur-list"><p class="loading">Memuat...</p></div>
   </div>
-
   <div id="panel-buat" style="display:none;">
     <div class="card">
       <p class="card-title">Buat Sesi Absensi Baru</p>
@@ -80,7 +80,7 @@
       <div class="field">
         <label>Daftar Nama Peserta</label>
         <textarea id="inp-peserta" placeholder="Tulis satu nama per baris:&#10;Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi&#10;..."></textarea>
-        <span class="hint">Tulis satu nama per baris. Nama ini akan muncul saat absensi.</span>
+        <span class="hint">Tulis satu nama per baris.</span>
       </div>
     </div>
     <div class="status" id="status-buat"></div>
@@ -93,11 +93,14 @@
   <div id="absen-header"></div>
   <div class="stat-row" id="absen-stat"></div>
   <div class="progress-wrap"><div class="progress-fill" id="absen-progress" style="width:0%"></div></div>
+  <div id="unsaved-bar" style="display:none;" class="unsaved-bar">Ada perubahan belum disimpan</div>
   <div id="belum-container"></div>
   <div id="peserta-list"><p class="loading">Memuat...</p></div>
-  <div style="margin-top:1rem;">
+  <div style="margin-top:1rem; display:flex; flex-direction:column; gap:0;">
+    <div class="tappable btn-green" id="btn-simpan-absen">💾 Simpan Absensi</div>
     <div class="tappable btn-danger" id="btn-reset">🔄 Reset Absensi</div>
   </div>
+  <div class="status" id="status-absen"></div>
 </div>
 
 <div id="jsonp-container" style="display:none;"></div>
@@ -108,6 +111,9 @@ const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QX
 let cbCount = 0;
 let activeTurId = null;
 let activeTurNama = '';
+let localState = {}; // nama -> true/false
+let savedState = {}; // nama -> true/false (dari server)
+let hasUnsaved = false;
 
 function jsonp(params) {
   return new Promise((resolve, reject) => {
@@ -144,13 +150,14 @@ function switchTab(t) {
   if (t==='absen') loadTurList();
 }
 
-function setStatus(msg, type) {
-  const el = document.getElementById('status-buat');
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
   if (!el) return;
   el.textContent = msg;
-  el.style.color = type==='ok' ? 'green' : type==='err' ? 'red' : '#888';
+  el.style.color = type==='ok' ? '#16a34a' : type==='err' ? '#dc2626' : '#888';
 }
 
+// ======= TUR LIST =======
 async function loadTurList() {
   const c = document.getElementById('tur-list');
   c.innerHTML = '<p class="loading">Memuat...</p>';
@@ -162,8 +169,8 @@ async function loadTurList() {
       return;
     }
     c.innerHTML = data.map(t => `
-      <div class="tur-card" id="tur-${t.id}">
-        <div class="tur-info" onclick="bukaAbsensi('${t.id}', '${t.nama_tur}')">
+      <div class="tur-card">
+        <div class="tur-info" onclick="bukaAbsensi('${t.id}', '${(t.nama_tur||'').replace(/'/g,"\\'")}')">
           <p class="tur-name">${t.nama_tur}</p>
           <p class="tur-date">${t.tanggal || 'Tanpa tanggal'}</p>
         </div>
@@ -179,10 +186,10 @@ async function buatTur() {
   const nama = document.getElementById('inp-tur-nama').value.trim();
   const tgl = document.getElementById('inp-tur-tgl').value;
   const pesertaRaw = document.getElementById('inp-peserta').value.trim();
-  if (!nama) { setStatus('Nama tur wajib diisi.', 'err'); return; }
-  if (!pesertaRaw) { setStatus('Daftar peserta wajib diisi.', 'err'); return; }
+  if (!nama) { setStatus('status-buat', 'Nama tur wajib diisi.', 'err'); return; }
+  if (!pesertaRaw) { setStatus('status-buat', 'Daftar peserta wajib diisi.', 'err'); return; }
   const peserta = pesertaRaw.split('\n').map(n => n.trim()).filter(Boolean).join('|');
-  setStatus('Menyimpan...', '');
+  setStatus('status-buat', 'Menyimpan...', '');
   document.getElementById('btn-buat-tur').style.opacity = '0.5';
   try {
     const res = await jsonp({ action: 'buat_tur', nama_tur: nama, tanggal: tgl, peserta });
@@ -190,38 +197,36 @@ async function buatTur() {
       document.getElementById('inp-tur-nama').value = '';
       document.getElementById('inp-tur-tgl').value = '';
       document.getElementById('inp-peserta').value = '';
-      setStatus('✓ Sesi berhasil dibuat!', 'ok');
-      setTimeout(() => {
-        setStatus('');
-        switchTab('absen');
-        bukaAbsensi(res.id, nama);
-      }, 800);
+      setStatus('status-buat', '✓ Berhasil!', 'ok');
+      setTimeout(() => { setStatus('status-buat', '', ''); switchTab('absen'); bukaAbsensi(res.id, nama); }, 800);
     } else {
-      setStatus('Gagal: ' + (res.error||''), 'err');
+      setStatus('status-buat', 'Gagal: ' + (res.error||''), 'err');
     }
   } catch(e) {
-    setStatus('Gagal menyimpan. Cek koneksi.', 'err');
+    setStatus('status-buat', 'Gagal. Cek koneksi.', 'err');
   }
   document.getElementById('btn-buat-tur').style.opacity = '';
 }
 
 async function hapusTur(id, e) {
   e.stopPropagation();
-  if (!confirm('Hapus sesi ini beserta data absensinya?')) return;
+  if (!confirm('Hapus sesi ini?')) return;
   await jsonp({ action: 'hapus_tur', id });
   loadTurList();
 }
 
+// ======= ABSENSI =======
 async function bukaAbsensi(turId, turNama) {
   activeTurId = turId;
   activeTurNama = turNama;
+  localState = {};
+  savedState = {};
+  hasUnsaved = false;
   document.getElementById('view-list').style.display = 'none';
   document.getElementById('view-absen').style.display = '';
-  document.getElementById('absen-header').innerHTML = `
-    <div style="margin-bottom:1rem;">
-      <p style="font-size:16px; font-weight:500;">${turNama}</p>
-    </div>
-  `;
+  document.getElementById('absen-header').innerHTML = `<p style="font-size:16px;font-weight:500;margin-bottom:1rem;">${turNama}</p>`;
+  document.getElementById('unsaved-bar').style.display = 'none';
+  setStatus('status-absen', '', '');
   await loadPeserta();
 }
 
@@ -231,81 +236,134 @@ async function loadPeserta() {
   try {
     const res = await jsonp({ action: 'get_peserta', tur_id: activeTurId });
     const data = res.data || [];
-    const hadir = data.filter(p => p.hadir).length;
-    const total = data.length;
-    const belum = data.filter(p => !p.hadir);
-    const pct = total ? Math.round(hadir/total*100) : 0;
 
-    document.getElementById('absen-stat').innerHTML = `
-      <div class="stat"><div class="stat-num" style="color:#16a34a;">${hadir}</div><div class="stat-lbl">Hadir ✓</div></div>
-      <div class="stat"><div class="stat-num" style="color:#dc2626;">${total-hadir}</div><div class="stat-lbl">Belum</div></div>
-      <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">Total</div></div>
-    `;
-    document.getElementById('absen-progress').style.width = pct + '%';
+    // init local state dari server
+    data.forEach(p => {
+      savedState[p.nama] = !!p.hadir;
+      if (localState[p.nama] === undefined) localState[p.nama] = !!p.hadir;
+    });
 
-    if (belum.length && hadir > 0) {
-      document.getElementById('belum-container').innerHTML = `
-        <div class="belum-list">
-          <div class="belum-title">⚠️ Belum hadir:</div>
-          ${belum.map(p => p.nama).join(', ')}
-        </div>
-      `;
-    } else {
-      document.getElementById('belum-container').innerHTML = '';
-    }
-
-    if (!data.length) { c.innerHTML = '<p class="empty">Tidak ada peserta.</p>'; return; }
-
-    c.innerHTML = `<div>` + data.map((p, i) => `
-      <div class="peserta-row" onclick="toggleCheckin('${p.nama}', this)">
-        <span class="peserta-num">${i+1}</span>
-        <div style="flex:1;">
-          <div class="peserta-name">${p.nama}</div>
-          ${p.hadir && p.waktu ? '<div class="peserta-waktu">✓ ' + formatWaktu(p.waktu) + '</div>' : ''}
-        </div>
-        <div class="check-circle ${p.hadir ? 'checked' : ''}">${p.hadir ? '✓' : ''}</div>
-      </div>
-    `).join('') + `</div>`;
-
+    renderPeserta(data.map(p => p.nama));
   } catch(e) {
     c.innerHTML = '<p class="empty">Gagal memuat peserta.</p>';
   }
 }
 
-function formatWaktu(iso) {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  } catch(e) { return ''; }
+function renderPeserta(namaList) {
+  const hadir = namaList.filter(n => localState[n]).length;
+  const total = namaList.length;
+  const belum = namaList.filter(n => !localState[n]);
+  const pct = total ? Math.round(hadir/total*100) : 0;
+
+  document.getElementById('absen-stat').innerHTML = `
+    <div class="stat"><div class="stat-num" style="color:#16a34a;">${hadir}</div><div class="stat-lbl">Hadir ✓</div></div>
+    <div class="stat"><div class="stat-num" style="color:#dc2626;">${total-hadir}</div><div class="stat-lbl">Belum</div></div>
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">Total</div></div>
+  `;
+  document.getElementById('absen-progress').style.width = pct + '%';
+
+  if (belum.length && hadir > 0) {
+    document.getElementById('belum-container').innerHTML = `
+      <div class="belum-list">
+        <div class="belum-title">⚠️ Belum hadir:</div>
+        ${belum.join(', ')}
+      </div>
+    `;
+  } else {
+    document.getElementById('belum-container').innerHTML = '';
+  }
+
+  const c = document.getElementById('peserta-list');
+  c.innerHTML = `<div>` + namaList.map((nama, i) => `
+    <div class="peserta-row" onclick="toggleLocal('${nama.replace(/'/g,"\\'")}')">
+      <span class="peserta-num">${i+1}</span>
+      <div style="flex:1;">
+        <div class="peserta-name">${nama}</div>
+      </div>
+      <div class="check-circle ${localState[nama] ? 'checked' : ''}" id="circle-${i}">${localState[nama] ? '✓' : ''}</div>
+    </div>
+  `).join('') + `</div>`;
+
+  // simpan nama list untuk simpan nanti
+  window._namaList = namaList;
 }
 
-async function toggleCheckin(nama, row) {
-  const circle = row.querySelector('.check-circle');
-  const wasChecked = circle.classList.contains('checked');
-  if (wasChecked) {
-    circle.classList.remove('checked');
-    circle.textContent = '';
+function toggleLocal(nama) {
+  localState[nama] = !localState[nama];
+
+  // update UI stat & progress & belum
+  const namaList = window._namaList || [];
+  const hadir = namaList.filter(n => localState[n]).length;
+  const total = namaList.length;
+  const belum = namaList.filter(n => !localState[n]);
+  const pct = total ? Math.round(hadir/total*100) : 0;
+
+  document.getElementById('absen-stat').innerHTML = `
+    <div class="stat"><div class="stat-num" style="color:#16a34a;">${hadir}</div><div class="stat-lbl">Hadir ✓</div></div>
+    <div class="stat"><div class="stat-num" style="color:#dc2626;">${total-hadir}</div><div class="stat-lbl">Belum</div></div>
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">Total</div></div>
+  `;
+  document.getElementById('absen-progress').style.width = pct + '%';
+
+  if (belum.length && hadir > 0) {
+    document.getElementById('belum-container').innerHTML = `
+      <div class="belum-list"><div class="belum-title">⚠️ Belum hadir:</div>${belum.join(', ')}</div>
+    `;
   } else {
-    circle.classList.add('checked');
-    circle.textContent = '✓';
+    document.getElementById('belum-container').innerHTML = '';
   }
-  try {
-    await jsonp({ action: 'checkin', tur_id: activeTurId, nama });
-    await loadPeserta();
-  } catch(e) {
-    if (wasChecked) { circle.classList.add('checked'); circle.textContent = '✓'; }
+
+  // update circle yang ditap
+  namaList.forEach((n, i) => {
+    const circle = document.getElementById('circle-' + i);
+    if (!circle) return;
+    if (localState[n]) { circle.classList.add('checked'); circle.textContent = '✓'; }
     else { circle.classList.remove('checked'); circle.textContent = ''; }
+  });
+
+  // tandai ada perubahan
+  hasUnsaved = true;
+  document.getElementById('unsaved-bar').style.display = '';
+  setStatus('status-absen', '', '');
+}
+
+async function simpanAbsensi() {
+  if (!hasUnsaved) { setStatus('status-absen', 'Tidak ada perubahan.', ''); return; }
+  setStatus('status-absen', 'Menyimpan...', '');
+  document.getElementById('btn-simpan-absen').style.opacity = '0.5';
+  try {
+    const namaList = window._namaList || [];
+    // kirim semua nama yang hadir sebagai string pipe-separated
+    const hadirList = namaList.filter(n => localState[n]).join('|');
+    const res = await jsonp({ action: 'save_absensi', tur_id: activeTurId, hadir_list: hadirList });
+    if (res.success) {
+      hasUnsaved = false;
+      document.getElementById('unsaved-bar').style.display = 'none';
+      setStatus('status-absen', '✓ Absensi tersimpan!', 'ok');
+      setTimeout(() => setStatus('status-absen', '', ''), 3000);
+      // update savedState
+      namaList.forEach(n => savedState[n] = localState[n]);
+    } else {
+      setStatus('status-absen', 'Gagal: ' + (res.error||''), 'err');
+    }
+  } catch(e) {
+    setStatus('status-absen', 'Gagal. Cek koneksi.', 'err');
   }
+  document.getElementById('btn-simpan-absen').style.opacity = '';
 }
 
 async function resetAbsensi() {
   if (!confirm('Reset semua absensi untuk sesi ini?')) return;
-  await jsonp({ action: 'reset_absensi', tur_id: activeTurId });
-  loadPeserta();
+  const namaList = window._namaList || [];
+  namaList.forEach(n => localState[n] = false);
+  hasUnsaved = true;
+  renderPeserta(namaList);
+  document.getElementById('unsaved-bar').style.display = '';
+  await simpanAbsensi();
 }
 
 function kembali() {
+  if (hasUnsaved && !confirm('Ada perubahan belum disimpan. Tetap keluar?')) return;
   document.getElementById('view-absen').style.display = 'none';
   document.getElementById('view-list').style.display = '';
   activeTurId = null;
@@ -313,6 +371,7 @@ function kembali() {
 }
 
 tap(document.getElementById('btn-buat-tur'), buatTur);
+tap(document.getElementById('btn-simpan-absen'), simpanAbsensi);
 tap(document.getElementById('btn-reset'), resetAbsensi);
 tap(document.getElementById('btn-back'), kembali);
 
