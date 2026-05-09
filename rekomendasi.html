@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rekomendasi Tempat — Tour Leader</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1rem 1rem 4rem; }
+  h1 { font-size: 17px; font-weight: 500; margin-bottom: 1rem; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  label { font-size: 12px; color: #666; }
+  input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
+  textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+  .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
+  .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .tab.active { color: #1a1a18; border-bottom: 2px solid #1a1a18; font-weight: 500; }
+  .tappable { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .btn-primary { background: #1a1a18; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-secondary { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.2); color: #1a1a18; margin-bottom: 8px; }
+  .btn-wa { background: #25D366; color: #fff; font-weight: 500; border: none; margin-bottom: 8px; }
+  .place-item { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; position: relative; }
+  .place-name { font-size: 13px; font-weight: 500; margin: 0 28px 2px 0; }
+  .place-meta { font-size: 11px; color: #888; margin: 0 0 4px; }
+  .place-desc { font-size: 12px; color: #555; margin: 0; line-height: 1.5; }
+  .del-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 20px; padding: 4px; touch-action: manipulation; }
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); color: #666; margin-right: 4px; }
+  .section-head { font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 6px; }
+  .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
+  .status { font-size: 12px; text-align: center; min-height: 18px; margin-bottom: 6px; }
+  .result-box { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; white-space: pre-wrap; font-size: 13px; line-height: 1.8; margin-bottom: 10px; word-break: break-word; }
+  .loading { text-align: center; color: #888; font-size: 13px; padding: 1.5rem 0; }
+  .container { max-width: 640px; margin: 0 auto; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Rekomendasi Tempat</h1>
+
+<div class="tab-row">
+  <div class="tab active" id="tab-add" onclick="switchTab('add')">+ Tambah</div>
+  <div class="tab" id="tab-list" onclick="switchTab('list')">Daftar</div>
+  <div class="tab" id="tab-wa" onclick="switchTab('wa')">Generate WA</div>
+</div>
+
+<div id="panel-add">
+  <div class="card">
+    <p class="card-title">Input Tempat</p>
+    <div class="field"><label>Kota / Destinasi</label><input type="text" id="inp-kota" placeholder="cth: Brussels, Lucerne, Paris"></div>
+    <div class="field"><label>Nama Tempat</label><input type="text" id="inp-nama" placeholder="cth: Chapel Bridge"></div>
+    <div class="field"><label>Kategori</label>
+      <select id="inp-kat">
+        <option value="Landmark">🏛 Landmark</option>
+        <option value="Halal Food">🍽 Halal Food</option>
+        <option value="Chinese Food">🥢 Chinese Food</option>
+        <option value="Local Food">🍴 Local Food</option>
+        <option value="Fast Food">🍔 Fast Food</option>
+        <option value="Groceries">🛒 Groceries</option>
+        <option value="Souvenir">🛍 Souvenir</option>
+        <option value="Toilet Umum">🚻 Toilet Umum</option>
+      </select>
+    </div>
+    <div class="field"><label>Deskripsi</label><textarea id="inp-desc" placeholder="cth: Restoran halal dengan menu nasi goreng, cocok untuk rombongan."></textarea></div>
+    <div class="row2">
+      <div class="field"><label>Jam Buka</label><input type="text" id="inp-jam" placeholder="cth: 09.00-21.00"></div>
+      <div class="field"><label>Link Google Maps</label><input type="url" id="inp-maps" placeholder="https://maps.app.goo.gl/..."></div>
+    </div>
+  </div>
+  <div class="status" id="status-msg"></div>
+  <div class="tappable btn-primary" id="btn-simpan">Simpan</div>
+</div>
+
+<div id="panel-list" style="display:none;">
+  <div id="list-container"><p class="loading">Memuat data...</p></div>
+</div>
+
+<div id="panel-wa" style="display:none;">
+  <div class="card">
+    <p class="card-title">Filter</p>
+    <div class="row2">
+      <div class="field"><label>Kota</label><select id="filter-kota"><option value="">Semua kota</option></select></div>
+      <div class="field"><label>Kategori</label>
+        <select id="filter-kat">
+          <option value="">Semua</option>
+          <option value="Landmark">Landmark</option>
+          <option value="Halal Food">Halal Food</option>
+          <option value="Chinese Food">Chinese Food</option>
+          <option value="Local Food">Local Food</option>
+          <option value="Fast Food">Fast Food</option>
+          <option value="Groceries">Groceries</option>
+          <option value="Souvenir">Souvenir</option>
+          <option value="Toilet Umum">Toilet Umum</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="tappable btn-wa" id="btn-gen-wa">Generate Teks WA</div>
+  <div id="wa-output" style="display:none;">
+    <div class="result-box" id="wa-text"></div>
+    <div class="tappable btn-secondary" id="btn-copy-wa">Salin ke Clipboard</div>
+  </div>
+</div>
+</div>
+
+<script>
+const SUPA_URL = 'https://iwgmoofcdsabouzqamtp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3Z21vb2ZjZHNhYm91enFhbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMDY0MjUsImV4cCI6MjA5Mjg4MjQyNX0.BOBFRB7UZ6dZ6iY8YDh6zYTgLs-t6dN524QW2-J6xcI';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+function tap(el, fn) {
+  if (!el) return;
+  let moved = false;
+  el.addEventListener('touchstart', () => { moved = false; }, { passive: true });
+  el.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  el.addEventListener('touchend', e => { if (!moved) { e.preventDefault(); fn(); } });
+  el.addEventListener('click', fn);
+}
+
+function switchTab(t) {
+  ['add','list','wa'].forEach(id => {
+    document.getElementById('panel-'+id).style.display = id===t ? '' : 'none';
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  if (t==='list') loadList();
+  if (t==='wa') loadFilterKota();
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.style.color = type==='ok' ? 'green' : type==='err' ? 'red' : '#888';
+}
+
+async function simpan() {
+  const nama = document.getElementById('inp-nama').value.trim();
+  const kota = document.getElementById('inp-kota').value.trim();
+  const kategori = document.getElementById('inp-kat').value;
+  const deskripsi = document.getElementById('inp-desc').value.trim();
+  const jam_buka = document.getElementById('inp-jam').value.trim();
+  const maps_url = document.getElementById('inp-maps').value.trim();
+  if (!nama || !kota) { setStatus('Nama tempat dan kota wajib diisi.', 'err'); return; }
+  setStatus('Menyimpan...', '');
+  const { error } = await db.from('rekomendasi_tempat').insert({ nama, kota, kategori, deskripsi, jam_buka, maps_url });
+  if (error) { setStatus('Gagal menyimpan: ' + error.message, 'err'); return; }
+  document.getElementById('inp-nama').value = '';
+  document.getElementById('inp-desc').value = '';
+  document.getElementById('inp-jam').value = '';
+  document.getElementById('inp-maps').value = '';
+  setStatus('✓ ' + nama + ' tersimpan!', 'ok');
+  setTimeout(() => setStatus(''), 3000);
+}
+
+async function loadList() {
+  const c = document.getElementById('list-container');
+  c.innerHTML = '<p class="loading">Memuat...</p>';
+  const { data, error } = await db.from('rekomendasi_tempat').select('*').order('kota').order('kategori').order('created_at');
+  if (error || !data?.length) { c.innerHTML = '<p class="empty">Belum ada tempat tersimpan.</p>'; return; }
+  const grouped = {};
+  data.forEach(p => { if (!grouped[p.kota]) grouped[p.kota]=[]; grouped[p.kota].push(p); });
+  c.innerHTML = Object.entries(grouped).map(([kota, items]) => `
+    <p class="section-head">${kota}</p>
+    ${items.map(p => `
+      <div class="place-item">
+        <button class="del-btn" onclick="hapus(${p.id})">×</button>
+        <p class="place-name">${p.nama}</p>
+        <p class="place-meta"><span class="badge">${p.kategori}</span>${p.jam_buka ? '<span class="badge">'+p.jam_buka+'</span>' : ''}</p>
+        ${p.deskripsi ? '<p class="place-desc">'+p.deskripsi+'</p>' : ''}
+        ${p.maps_url ? '<p style="font-size:11px;margin-top:4px;"><a href="'+p.maps_url+'" style="color:#185FA5;">Lihat di Maps</a></p>' : ''}
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+async function hapus(id) {
+  if (!confirm('Hapus tempat ini?')) return;
+  await db.from('rekomendasi_tempat').delete().eq('id', id);
+  loadList();
+}
+
+async function loadFilterKota() {
+  document.getElementById('wa-output').style.display = 'none';
+  const { data } = await db.from('rekomendasi_tempat').select('kota');
+  const kota = [...new Set((data||[]).map(p=>p.kota))];
+  const sel = document.getElementById('filter-kota');
+  sel.innerHTML = '<option value="">Semua kota</option>' + kota.map(k=>`<option value="${k}">${k}</option>`).join('');
+}
+
+const ORDER = ['Landmark','Halal Food','Chinese Food','Local Food','Fast Food','Groceries','Souvenir','Toilet Umum'];
+const ICON = { Landmark:'🏛', 'Halal Food':'🍽', 'Chinese Food':'🥢', 'Local Food':'🍴', 'Fast Food':'🍔', Groceries:'🛒', Souvenir:'🛍', 'Toilet Umum':'🚻' };
+
+async function generateWA() {
+  const kotaF = document.getElementById('filter-kota').value;
+  const katF = document.getElementById('filter-kat').value;
+  let q = db.from('rekomendasi_tempat').select('*').order('kategori').order('nama');
+  if (kotaF) q = q.eq('kota', kotaF);
+  if (katF) q = q.eq('kategori', katF);
+  const { data } = await q;
+  if (!data?.length) { alert('Tidak ada tempat yang sesuai filter.'); return; }
+  const grouped = {};
+  data.forEach(p => { if (!grouped[p.kategori]) grouped[p.kategori]=[]; grouped[p.kategori].push(p); });
+  const kota = kotaF || [...new Set(data.map(p=>p.kota))].join(', ');
+  let txt = `📍 *Rekomendasi Tempat — ${kota}*\n`;
+  ORDER.filter(k => grouped[k]).forEach(kat => {
+    txt += `\n${ICON[kat]||'📌'} *${kat}*\n`;
+    grouped[kat].forEach(p => {
+      txt += `\n*${p.nama}*\n`;
+      if (p.deskripsi) txt += `${p.deskripsi}\n`;
+      if (p.jam_buka) txt += `🕐 ${p.jam_buka}\n`;
+      if (p.maps_url) txt += `📌 ${p.maps_url}\n`;
+    });
+  });
+  txt += `\n━━━━━━━━━━━━━━\n_Selamat menikmati! 😊_`;
+  document.getElementById('wa-text').textContent = txt;
+  document.getElementById('wa-output').style.display = '';
+}
+
+function copyWA() {
+  const text = document.getElementById('wa-text').textContent;
+  const btn = document.getElementById('btn-copy-wa');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Tersalin!';
+      setTimeout(() => { btn.textContent = 'Salin ke Clipboard'; }, 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'Tersalin!';
+    setTimeout(() => { btn.textContent = 'Salin ke Clipboard'; }, 2000);
+  }
+}
+
+tap(document.getElementById('btn-simpan'), simpan);
+tap(document.getElementById('btn-gen-wa'), generateWA);
+tap(document.getElementById('btn-copy-wa'), copyWA);
+</script>
+</body>
+</html>
