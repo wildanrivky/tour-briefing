@@ -16,9 +16,9 @@
   label { font-size: 12px; color: #666; }
   input, select, textarea { width: 100%; font-size: 14px; padding: 10px; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; background: #fff; color: #1a1a18; font-family: inherit; outline: none; -webkit-appearance: none; }
   textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
-  .kota-wrap { display: flex; gap: 8px; align-items: flex-end; }
+  .kota-wrap { display: flex; gap: 8px; }
   .kota-wrap select { flex: 1; }
-  .btn-kota-baru { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #666; cursor: pointer; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; font-family: inherit; }
+  .btn-kota-baru { background: #f5f5f3; border: 0.5px solid rgba(0,0,0,0.18); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #666; cursor: pointer; white-space: nowrap; font-family: inherit; touch-action: manipulation; }
   .inp-kota-baru { display: none; margin-top: 6px; }
   .tab-row { display: flex; border-bottom: 0.5px solid rgba(0,0,0,0.12); margin-bottom: 1rem; overflow-x: auto; }
   .tab { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
@@ -32,7 +32,7 @@
   .place-name { font-size: 13px; font-weight: 500; margin: 0 28px 2px 0; }
   .place-meta { font-size: 11px; color: #888; margin: 0 0 4px; }
   .place-desc { font-size: 12px; color: #555; margin: 0; line-height: 1.5; }
-  .del-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 20px; padding: 4px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .del-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 20px; padding: 4px; touch-action: manipulation; }
   .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); color: #666; margin-right: 4px; }
   .section-head { font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 6px; }
   .empty { text-align: center; color: #888; font-size: 13px; padding: 2rem 0; }
@@ -120,7 +120,6 @@
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
-let kotaList = [];
 let kotaBaruMode = false;
 
 function tap(el, fn) {
@@ -153,37 +152,31 @@ function toggleKotaBaru() {
   const sel = document.getElementById('inp-kota');
   const btn = document.getElementById('btn-kota-baru');
   if (kotaBaruMode) {
-    inp.style.display = 'block';
-    sel.style.display = 'none';
-    btn.textContent = '← Pilih';
-    inp.focus();
+    inp.style.display = 'block'; sel.style.display = 'none';
+    btn.textContent = '← Pilih'; inp.focus();
   } else {
-    inp.style.display = 'none';
-    sel.style.display = '';
+    inp.style.display = 'none'; sel.style.display = '';
     btn.textContent = '+ Kota baru';
   }
 }
 
+async function apiGet(params) {
+  const url = API + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+
 async function loadKotaDropdown() {
   try {
-    const res = await fetch(API + '?action=get');
-    const json = await res.json();
+    const json = await apiGet({ action: 'get' });
     const data = json.data || [];
-    kotaList = [...new Set(data.map(p => p.kota).filter(Boolean))].sort();
+    const kota = [...new Set(data.map(p => p.kota).filter(Boolean))].sort();
     const sel = document.getElementById('inp-kota');
-    if (kotaList.length === 0) {
-      sel.innerHTML = '<option value="">-- Belum ada kota, tambah baru --</option>';
-    } else {
-      sel.innerHTML = '<option value="">-- Pilih kota --</option>' + kotaList.map(k => `<option value="${k}">${k}</option>`).join('');
-    }
+    sel.innerHTML = '<option value="">-- Pilih kota --</option>' + kota.map(k => `<option value="${k}">${k}</option>`).join('');
+    if (!kota.length) sel.innerHTML = '<option value="">-- Belum ada kota --</option>';
   } catch(e) {
     document.getElementById('inp-kota').innerHTML = '<option value="">Gagal memuat</option>';
   }
-}
-
-async function apiCall(body) {
-  const res = await fetch(API, { method: 'POST', body: JSON.stringify(body) });
-  return res.json();
 }
 
 async function simpan() {
@@ -195,14 +188,15 @@ async function simpan() {
   setStatus('Menyimpan...', '');
   document.getElementById('btn-simpan').style.opacity = '0.5';
   try {
-    const res = await apiCall({
-      action: 'insert', kota, nama,
+    const json = await apiGet({
+      action: 'insert',
+      kota, nama,
       kategori: document.getElementById('inp-kat').value,
       deskripsi: document.getElementById('inp-desc').value.trim(),
       jam_buka: document.getElementById('inp-jam').value.trim(),
       maps_url: document.getElementById('inp-maps').value.trim()
     });
-    if (res.success) {
+    if (json.success) {
       document.getElementById('inp-nama').value = '';
       document.getElementById('inp-desc').value = '';
       document.getElementById('inp-jam').value = '';
@@ -216,7 +210,7 @@ async function simpan() {
       setStatus('✓ ' + nama + ' tersimpan!', 'ok');
       setTimeout(() => setStatus(''), 3000);
     } else {
-      setStatus('Gagal: ' + (res.error||''), 'err');
+      setStatus('Gagal: ' + (json.error||''), 'err');
     }
   } catch(e) {
     setStatus('Gagal menyimpan. Cek koneksi.', 'err');
@@ -228,8 +222,7 @@ async function loadList() {
   const c = document.getElementById('list-container');
   c.innerHTML = '<p class="loading">Memuat...</p>';
   try {
-    const res = await fetch(API + '?action=get');
-    const json = await res.json();
+    const json = await apiGet({ action: 'get' });
     const data = json.data || [];
     if (!data.length) { c.innerHTML = '<p class="empty">Belum ada tempat tersimpan.</p>'; return; }
     const grouped = {};
@@ -253,15 +246,14 @@ async function loadList() {
 
 async function hapus(id) {
   if (!confirm('Hapus tempat ini?')) return;
-  await apiCall({ action: 'delete', id });
+  await apiGet({ action: 'delete', id });
   loadList();
 }
 
 async function loadFilterKota() {
   document.getElementById('wa-output').style.display = 'none';
   try {
-    const res = await fetch(API + '?action=get');
-    const json = await res.json();
+    const json = await apiGet({ action: 'get' });
     const data = json.data || [];
     const kota = [...new Set(data.map(p=>p.kota))].sort();
     const sel = document.getElementById('filter-kota');
@@ -276,8 +268,7 @@ async function generateWA() {
   const kotaF = document.getElementById('filter-kota').value;
   const katF = document.getElementById('filter-kat').value;
   try {
-    const res = await fetch(API + '?action=get');
-    const json = await res.json();
+    const json = await apiGet({ action: 'get' });
     let data = json.data || [];
     if (kotaF) data = data.filter(p => p.kota === kotaF);
     if (katF) data = data.filter(p => p.kategori === katF);
@@ -323,7 +314,6 @@ function copyWA() {
 tap(document.getElementById('btn-simpan'), simpan);
 tap(document.getElementById('btn-gen-wa'), generateWA);
 tap(document.getElementById('btn-copy-wa'), copyWA);
-
 loadKotaDropdown();
 </script>
 </body>
