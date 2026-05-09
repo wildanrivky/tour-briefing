@@ -121,6 +121,28 @@
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyxsQdlHewy59IBBN7UQ14-_7QXqo9jnTMYAAYAoG-akhOdudy6oiYLQs6i5Mz4IS5Z/exec';
 let kotaBaruMode = false;
+let cbCount = 0;
+
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb' + (++cbCount);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error('Timeout'));
+    }, 15000);
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.getElementById('jsonp-container').innerHTML = '';
+      resolve(data);
+    };
+    const url = API + '?' + new URLSearchParams({ ...params, callback: cbName }).toString();
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('Script error')); };
+    document.getElementById('jsonp-container').appendChild(s);
+  });
+}
 
 function tap(el, fn) {
   if (!el) return;
@@ -160,20 +182,15 @@ function toggleKotaBaru() {
   }
 }
 
-async function apiGet(params) {
-  const url = API + '?' + new URLSearchParams(params).toString();
-  const res = await fetch(url);
-  return res.json();
-}
-
 async function loadKotaDropdown() {
   try {
-    const json = await apiGet({ action: 'get' });
+    const json = await jsonp({ action: 'get' });
     const data = json.data || [];
     const kota = [...new Set(data.map(p => p.kota).filter(Boolean))].sort();
     const sel = document.getElementById('inp-kota');
-    sel.innerHTML = '<option value="">-- Pilih kota --</option>' + kota.map(k => `<option value="${k}">${k}</option>`).join('');
-    if (!kota.length) sel.innerHTML = '<option value="">-- Belum ada kota --</option>';
+    sel.innerHTML = kota.length
+      ? '<option value="">-- Pilih kota --</option>' + kota.map(k => `<option value="${k}">${k}</option>`).join('')
+      : '<option value="">-- Belum ada kota --</option>';
   } catch(e) {
     document.getElementById('inp-kota').innerHTML = '<option value="">Gagal memuat</option>';
   }
@@ -188,15 +205,14 @@ async function simpan() {
   setStatus('Menyimpan...', '');
   document.getElementById('btn-simpan').style.opacity = '0.5';
   try {
-    const json = await apiGet({
-      action: 'insert',
-      kota, nama,
+    const res = await jsonp({
+      action: 'insert', kota, nama,
       kategori: document.getElementById('inp-kat').value,
       deskripsi: document.getElementById('inp-desc').value.trim(),
       jam_buka: document.getElementById('inp-jam').value.trim(),
       maps_url: document.getElementById('inp-maps').value.trim()
     });
-    if (json.success) {
+    if (res.success) {
       document.getElementById('inp-nama').value = '';
       document.getElementById('inp-desc').value = '';
       document.getElementById('inp-jam').value = '';
@@ -210,7 +226,7 @@ async function simpan() {
       setStatus('✓ ' + nama + ' tersimpan!', 'ok');
       setTimeout(() => setStatus(''), 3000);
     } else {
-      setStatus('Gagal: ' + (json.error||''), 'err');
+      setStatus('Gagal: ' + (res.error||''), 'err');
     }
   } catch(e) {
     setStatus('Gagal menyimpan. Cek koneksi.', 'err');
@@ -222,7 +238,7 @@ async function loadList() {
   const c = document.getElementById('list-container');
   c.innerHTML = '<p class="loading">Memuat...</p>';
   try {
-    const json = await apiGet({ action: 'get' });
+    const json = await jsonp({ action: 'get' });
     const data = json.data || [];
     if (!data.length) { c.innerHTML = '<p class="empty">Belum ada tempat tersimpan.</p>'; return; }
     const grouped = {};
@@ -246,14 +262,14 @@ async function loadList() {
 
 async function hapus(id) {
   if (!confirm('Hapus tempat ini?')) return;
-  await apiGet({ action: 'delete', id });
+  await jsonp({ action: 'delete', id });
   loadList();
 }
 
 async function loadFilterKota() {
   document.getElementById('wa-output').style.display = 'none';
   try {
-    const json = await apiGet({ action: 'get' });
+    const json = await jsonp({ action: 'get' });
     const data = json.data || [];
     const kota = [...new Set(data.map(p=>p.kota))].sort();
     const sel = document.getElementById('filter-kota');
@@ -268,7 +284,7 @@ async function generateWA() {
   const kotaF = document.getElementById('filter-kota').value;
   const katF = document.getElementById('filter-kat').value;
   try {
-    const json = await apiGet({ action: 'get' });
+    const json = await jsonp({ action: 'get' });
     let data = json.data || [];
     if (kotaF) data = data.filter(p => p.kota === kotaF);
     if (katF) data = data.filter(p => p.kategori === katF);
@@ -316,5 +332,7 @@ tap(document.getElementById('btn-gen-wa'), generateWA);
 tap(document.getElementById('btn-copy-wa'), copyWA);
 loadKotaDropdown();
 </script>
+
+<div id="jsonp-container" style="display:none;"></div>
 </body>
 </html>
